@@ -5,7 +5,9 @@
  *   1. public/downloads/<name>.skill   — a zip of each skills/<name>/ folder
  *   2. public/downloads/<name>.md      — a copy of each command, so downloads
  *                                        are served by the site itself
- *   3. .claude-plugin/{marketplace,plugin}.json — regenerated from config.yaml
+ *   3. .claude-plugin/{marketplace,plugin}.json,
+ *      .codex-plugin/plugin.json and .agents/plugins/marketplace.json
+ *      — all regenerated from config.yaml
  *
  * Runs before both `npm run dev` and `npm run build`.
  */
@@ -22,7 +24,9 @@ const config = parse(readFileSync(join(root, 'config.yaml'), 'utf8'));
 const SKILLS_DIR = join(root, 'skills');
 const COMMANDS_DIR = join(root, 'commands');
 const OUT_DIR = join(root, 'public', 'downloads');
-const PLUGIN_DIR = join(root, '.claude-plugin');
+const CLAUDE_DIR = join(root, '.claude-plugin');
+const CODEX_DIR = join(root, '.codex-plugin');
+const CODEX_MARKET_DIR = join(root, '.agents', 'plugins');
 
 // Fixed timestamp so repeated builds produce byte-identical archives.
 const FIXED_DATE = new Date('2000-01-01T00:00:00Z');
@@ -84,44 +88,85 @@ for (const file of files(COMMANDS_DIR, '.md')) {
   commandCount++;
 }
 
-// 3. Claude plugin manifests ------------------------------------------------
+// 3. Plugin manifests -------------------------------------------------------
 const repo = resolveRepo(config.site?.repo);
-const pluginName = repo.name || 'skills-library';
+
+// Both ecosystems require a kebab-case identifier, and a repository name is
+// not guaranteed to be one.
+const toKebab = (value) =>
+  value
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase();
+
+const pluginName = toKebab(repo.name || 'skills-library');
+const version = config.defaults?.version ?? '1.0.0';
+const description = config.site?.description ?? '';
+const homepage = repo.slug ? `https://github.com/${repo.slug}` : undefined;
+
 // Same rule as the site: an explicit author wins, otherwise the repo owner.
-// `url` is optional in the schema but worth setting — it points attribution at
-// a real profile rather than leaving a bare name.
+// `url` is optional in both schemas but worth setting — it points attribution
+// at a real profile rather than leaving a bare name.
 const author = {
   name: config.site?.author || repo.owner || 'Unknown',
   ...(repo.owner ? { url: `https://github.com/${repo.owner}` } : {}),
 };
 
-const write = (file, value) =>
-  writeFileSync(join(PLUGIN_DIR, file), `${JSON.stringify(value, null, 2)}\n`);
+const write = (dir, file, value) => {
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, file), `${JSON.stringify(value, null, 2)}\n`);
+};
 
-mkdirSync(PLUGIN_DIR, { recursive: true });
-
-write('plugin.json', {
+// Claude — https://code.claude.com/docs/en/plugin-marketplaces
+write(CLAUDE_DIR, 'plugin.json', {
   name: pluginName,
-  description: config.site?.description ?? '',
-  version: config.defaults?.version ?? '1.0.0',
+  description,
+  version,
   author,
-  ...(repo.slug ? { homepage: `https://github.com/${repo.slug}` } : {}),
+  ...(homepage ? { homepage } : {}),
   ...(config.defaults?.license ? { license: config.defaults.license } : {}),
 });
 
-write('marketplace.json', {
+write(CLAUDE_DIR, 'marketplace.json', {
   name: pluginName,
   owner: author,
+  plugins: [{ name: pluginName, source: './', description, version }],
+});
+
+// Codex — the plugin manifest. `skills` is a path relative to the plugin root,
+// which is the repository root here. commands/ is picked up by convention.
+write(CODEX_DIR, 'plugin.json', {
+  name: pluginName,
+  version,
+  description,
+  author,
+  ...(homepage ? { homepage, repository: homepage } : {}),
+  ...(config.defaults?.license ? { license: config.defaults.license } : {}),
+  skills: './skills/',
+  interface: {
+    displayName: config.site?.title ?? pluginName,
+    shortDescription: config.site?.tagline ?? description,
+  },
+});
+
+// Codex — the marketplace this repository publishes, so that
+// `codex plugin marketplace add <owner>/<repo>` resolves. The default
+// marketplace path is .agents/plugins/marketplace.json, and the single plugin
+// it lists is the repository itself.
+write(CODEX_MARKET_DIR, 'marketplace.json', {
+  name: pluginName,
+  interface: { displayName: config.site?.title ?? pluginName },
   plugins: [
     {
       name: pluginName,
-      source: './',
-      description: config.site?.description ?? '',
-      version: config.defaults?.version ?? '1.0.0',
+      source: { source: 'local', path: './' },
+      policy: { installation: 'AVAILABLE' },
+      category: 'Productivity',
     },
   ],
 });
 
 console.log(
-  `[assets] ${skillCount} skill bundle(s), ${commandCount} command file(s), plugin manifests for "${pluginName}"`,
+  `[assets] ${skillCount} skill bundle(s), ${commandCount} command file(s), Claude + Codex plugin manifests for "${pluginName}"`,
 );

@@ -10,6 +10,9 @@ export interface AgentConfig {
   skillDir: string;
   /** Where a single command file goes. May contain `{name}`. */
   commandPath: string;
+  /** Command that installs the whole library. Omitted for agents with no
+      plugin ecosystem. */
+  marketplace?: string;
   docs?: string;
 }
 
