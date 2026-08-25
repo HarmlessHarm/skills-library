@@ -10,22 +10,29 @@ Fork it, edit one YAML file, drop your skills in, and push.
 
 ## What you get
 
-- **A browsable site** — hero, search, tag filters, one tile per item.
+- **A browsable site** — search, tag filters, one tile per item.
 - **Search** across name, description and tags, with shareable filter URLs.
 - **Per-agent install instructions** — a dropdown in the header switches every snippet on the
   site between Claude Code, Codex and Copilot. The choice is remembered.
 - **Downloadable `.skill` bundles** — each skill folder zipped, supporting files included.
 - **A Claude plugin marketplace entry**, so the whole library installs with one command.
+- **Light and dark themes** — follows the viewer's system setting, with a header toggle that
+  overrides it and is remembered.
 - **Automatic deploys** to GitHub Pages on every push to `main`.
 
-Only skills and commands. No plugin browsing, no other content types.
+Only skills and commands. No plugin browsing or other content types YET.
 
 ## Setup
 
 1. Click **Use this template** → create your repository.
 2. In your new repo: **Settings ▸ Pages ▸ Build and deployment ▸ Source: GitHub Actions**.
-3. Edit [`config.yaml`](config.yaml) — realistically just `site.title` and `site.tagline`.
-4. Push. The workflow builds and deploys; your site appears at
+3. **If you forked instead of using the template**, GitHub disables Actions on forks. Open the
+   **Actions** tab, click **I understand my workflows, go ahead and enable them**, then run
+   **Deploy to GitHub Pages ▸ Run workflow** once by hand — a fork's first workflow run does
+   not start on its own. After that, pushes trigger it normally. Repositories created with
+   **Use this template** do not need this.
+4. Edit [`config.yaml`](config.yaml) — realistically just `site.title` and `site.tagline`.
+5. Push. The workflow builds and deploys; your site appears at
    `https://<you>.github.io/<repo>/`.
 
 Every value in `config.yaml` is optional. The repository owner, name, deploy URL and base
@@ -136,11 +143,27 @@ Two levels, depending on how far you want to go:
 - **Quick** — set `theme.accent`, `theme.accentDark`, `theme.font`, `theme.monoFont` and
   `theme.radius` in `config.yaml`. They are injected as CSS variables and override the defaults.
 - **Full** — edit [`src/styles/theme.css`](src/styles/theme.css). Every colour, radius, shadow
-  and width on the site is a custom property defined there, in both light and dark mode.
-  Components reference tokens only and never a literal colour, so changing a token changes the
-  whole site.
+  and width on the site is a custom property defined there. Components reference tokens only
+  and never a literal colour, so changing a token changes the whole site.
 
 Layout lives in [`src/styles/global.css`](src/styles/global.css) if you want to go further.
+
+### Light and dark
+
+Colours are written once, as `light-dark(light, dark)`:
+
+```css
+--bg: light-dark(#ffffff, #0e1014);
+```
+
+Which half applies comes from the `color-scheme` property, so there is no duplicated dark
+block to keep in sync — edit the pair and both themes follow. `light-dark()` needs a browser
+from 2024 or later; swap in a `prefers-color-scheme` block if you need to support older ones.
+
+The site follows the viewer's system setting by default. The header toggle overrides it with
+Light or Dark, stored in `localStorage` and applied by an inline script before the first
+paint, so there is no flash of the wrong theme. Choosing **System** clears the override.
+With JavaScript disabled the system setting still applies.
 
 ## Install targets
 
