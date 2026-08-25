@@ -11,7 +11,7 @@ const href = withBase(`/${item.type === 'skill' ? 'skills' : 'commands'}/${item.
 
 // The filter script reads these attributes; keeping the haystack pre-lowercased
 // keeps filtering cheap on every keystroke.
-const haystack = [item.name, item.title, item.description, item.category.label, ...item.tags]
+const haystack = [item.name, item.title, item.description, ...item.tags.map((t) => t.id)]
   .join(' ')
   .toLowerCase();
 ---
@@ -21,9 +21,7 @@ const haystack = [item.name, item.title, item.description, item.category.label, 
     class="card"
     href={href}
     data-item
-    data-type={item.type}
-    data-category={item.category.id}
-    data-tags={item.tags.join(',')}
+    data-tags={item.tags.map((t) => t.id).join(',')}
     data-search={haystack}
   >
     <div class="card__head">
@@ -34,9 +32,8 @@ const haystack = [item.name, item.title, item.description, item.category.label, 
     <p class="card__desc">{item.description}</p>
 
     <div class="card__meta">
-      <span class="badge badge--category">{item.category.label}</span>
-      {item.tags.slice(0, 3).map((tag) => <span class="badge">{tag}</span>)}
-      {item.tags.length > 3 && <span class="badge">+{item.tags.length - 3}</span>}
+      {item.tags.slice(0, 4).map((tag) => <span class="badge">{tag.label}</span>)}
+      {item.tags.length > 4 && <span class="badge">+{item.tags.length - 4}</span>}
     </div>
   </a>
 </li>

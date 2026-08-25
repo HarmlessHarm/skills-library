@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { parse } from 'yaml';
+import { resolveRepo } from './repo.mjs';
 
 /** An install target shown in the header dropdown. */
 export interface AgentConfig {
@@ -12,25 +13,19 @@ export interface AgentConfig {
   docs?: string;
 }
 
-export interface CategoryConfig {
-  id: string;
-  label: string;
-}
-
 export interface SiteConfig {
   site: {
     title: string;
     tagline: string;
     description: string;
-    author: string;
-    repo: string;
-    branch: string;
+    author?: string | null;
+    repo?: string | null;
+    branch?: string | null;
     url?: string | null;
     base?: string | null;
   };
-  defaults: { version: string; author: string; license?: string };
+  defaults: { version: string; license?: string };
   theme: Record<string, string>;
-  categories: CategoryConfig[];
   defaultAgent: string;
   agents: AgentConfig[];
 }
@@ -39,9 +34,9 @@ const raw = parse(readFileSync(new URL('../../config.yaml', import.meta.url), 'u
 
 export const config: SiteConfig = {
   ...raw,
-  categories: raw.categories ?? [],
+  site: raw.site ?? {},
   agents: raw.agents ?? [],
-  defaults: { version: '1.0.0', author: '', ...(raw.defaults ?? {}) },
+  defaults: { version: '1.0.0', ...(raw.defaults ?? {}) },
   theme: raw.theme ?? {},
 };
 
@@ -53,15 +48,24 @@ if (config.agents.length === 0) {
 export const defaultAgent: AgentConfig =
   config.agents.find((a) => a.id === config.defaultAgent) ?? config.agents[0];
 
-const [owner = '', repoName = ''] = (config.site.repo ?? '').split('/');
-export const repo = { owner, name: repoName, slug: config.site.repo, branch: config.site.branch || 'main' };
+const detected = resolveRepo(config.site.repo);
 
-/** The category chip a given frontmatter `category` maps to. */
-export function resolveCategory(id?: string): CategoryConfig {
-  if (!id) return { id: 'other', label: 'Other' };
-  return config.categories.find((c) => c.id === id) ?? { id, label: titleCase(id) };
-}
+export const repo = {
+  ...detected,
+  branch: config.site.branch || 'main',
+  url: detected.slug ? `https://github.com/${detected.slug}` : '',
+};
 
+/**
+ * Who the site says it is maintained by. Defaults to the repository owner, so
+ * a fork is correctly attributed without anyone editing config.yaml.
+ */
+export const maintainer = {
+  name: config.site.author || repo.owner,
+  url: repo.owner ? `https://github.com/${repo.owner}` : '',
+};
+
+/** Turns a tag like `pull-request` into the `Pull Request` shown on chips. */
 export function titleCase(value: string): string {
   return value
     .split(/[-_\s]+/)

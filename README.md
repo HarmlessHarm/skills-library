@@ -10,8 +10,8 @@ Fork it, edit one YAML file, drop your skills in, and push.
 
 ## What you get
 
-- **A browsable site** — hero, search, category and tag filters, one tile per item.
-- **Search** across name, description, category and tags, with shareable filter URLs.
+- **A browsable site** — hero, search, tag filters, one tile per item.
+- **Search** across name, description and tags, with shareable filter URLs.
 - **Per-agent install instructions** — a dropdown in the header switches every snippet on the
   site between Claude Code, Codex and Copilot. The choice is remembered.
 - **Downloadable `.skill` bundles** — each skill folder zipped, supporting files included.
@@ -24,12 +24,16 @@ Only skills and commands. No plugin browsing, no other content types.
 
 1. Click **Use this template** → create your repository.
 2. In your new repo: **Settings ▸ Pages ▸ Build and deployment ▸ Source: GitHub Actions**.
-3. Edit [`config.yaml`](config.yaml) — at minimum `site.title`, `site.author` and `site.repo`.
+3. Edit [`config.yaml`](config.yaml) — realistically just `site.title` and `site.tagline`.
 4. Push. The workflow builds and deploys; your site appears at
    `https://<you>.github.io/<repo>/`.
 
-You do not need to set `site.url` or `site.base`. They are derived from the repository the
-workflow runs in, so a fork deploys to the right path with no edits.
+Every value in `config.yaml` is optional. The repository owner, name, deploy URL and base
+path are worked out from `GITHUB_REPOSITORY` in CI, and from your `origin` remote when you
+run locally — so a fresh fork already shows the right maintainer, links and install commands
+with nothing filled in. Set `site.author` only if you want a display name instead of your
+GitHub username, and `site.repo` only to point at a different repository than the one you are
+building in.
 
 ## Adding a skill
 
@@ -40,8 +44,7 @@ Create `skills/<name>/SKILL.md`:
 name: my-skill
 description: What this does, and when an agent should reach for it.
 title: My Skill
-category: git
-tags: [git, review]
+tags: [git, code-review, pull-request]
 version: 1.0.0
 ---
 
@@ -58,10 +61,9 @@ specification requires — everything else is optional and only feeds this site:
 | `name`        | **Required.** Folder-safe identifier, used in install commands  |
 | `description` | **Required.** How an agent decides whether to load the skill    |
 | `title`       | Display name on the card. Defaults to a title-cased `name`      |
-| `category`    | Which filter chip it lands under. See `categories:` in config   |
-| `tags`        | Tag chips and search terms                                      |
+| `tags`        | Filter chips and search terms. Add as many as you like          |
 | `version`     | Shown on the detail page. Falls back to `defaults.version`      |
-| `author`      | Falls back to `defaults.author`                                 |
+| `author`      | Falls back to the site maintainer                               |
 | `license`     | Falls back to `defaults.license`                                |
 | `homepage`    | Optional external link                                          |
 
@@ -69,8 +71,9 @@ Add supporting files (`reference.md`, scripts, templates) beside `SKILL.md` — 
 into the downloadable `.skill` archive automatically. Relative links in the body are rewritten
 to point at the file in your repository, so they work on the site too.
 
-A category not listed in `config.yaml` still works; it just gets its own chip and a build
-warning.
+Tags are free-form — there is no list to register them in. They are matched
+case-insensitively and displayed capitalised, so `pull-request` renders as `Pull Request` and
+`Pull-Request` is the same tag.
 
 ## Adding a command
 
@@ -80,8 +83,7 @@ Create `commands/<name>.md` — a single file, matching Claude Code's convention
 ---
 name: my-command
 description: One line describing what running this does.
-category: writing
-tags: [releases]
+tags: [releases, writing]
 argument-hint: "[branch]"
 ---
 
@@ -94,13 +96,15 @@ The prompt the command runs.
 
 Everything site-level lives in [`config.yaml`](config.yaml):
 
-| Block        | What it controls                                                       |
-| ------------ | ---------------------------------------------------------------------- |
-| `site`       | Title, tagline, author, repository, and optional URL/base overrides     |
-| `defaults`   | Version, author and license for items that omit them                    |
-| `theme`      | Accent colour, fonts and corner radius                                  |
-| `categories` | The category chips, in the order they appear                            |
-| `agents`     | The install targets in the header dropdown                              |
+| Block      | What it controls                                                         |
+| ---------- | ------------------------------------------------------------------------ |
+| `site`     | Title and tagline, plus optional author/repository/URL/base overrides     |
+| `defaults` | Version and license for items that omit them                              |
+| `theme`    | Accent colour, fonts and corner radius                                    |
+| `agents`   | The install targets in the header dropdown                                |
+
+Tag chips are built from the tags your skills and commands actually use, so there is nothing
+to configure.
 
 After editing it, run `npm run build` (or just push — CI does it) so
 `.claude-plugin/marketplace.json` and `plugin.json` are regenerated from your details. **Commit
@@ -160,6 +164,7 @@ config.yaml              Site configuration — the file you edit
 skills/<name>/SKILL.md   One folder per skill, plus any supporting files
 commands/<name>.md       One file per command
 src/styles/theme.css     Design tokens
+src/lib/repo.mjs         Works out which repository this is, for links and attribution
 src/lib/                 Config loading, install snippets, item normalisation
 scripts/build-assets.mjs Bundles .skill files, regenerates plugin manifests
 .claude-plugin/          Generated marketplace manifests (committed)

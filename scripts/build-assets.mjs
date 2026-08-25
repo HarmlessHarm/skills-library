@@ -14,6 +14,7 @@ import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
 import JSZip from 'jszip';
+import { resolveRepo } from '../src/lib/repo.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const config = parse(readFileSync(join(root, 'config.yaml'), 'utf8'));
@@ -84,9 +85,10 @@ for (const file of files(COMMANDS_DIR, '.md')) {
 }
 
 // 3. Claude plugin manifests ------------------------------------------------
-const [owner, repoName] = (config.site?.repo ?? '').split('/');
-const pluginName = repoName || 'skills-library';
-const author = { name: config.site?.author ?? owner ?? 'Unknown' };
+const repo = resolveRepo(config.site?.repo);
+const pluginName = repo.name || 'skills-library';
+// Same rule as the site: an explicit author wins, otherwise the repo owner.
+const author = { name: config.site?.author || repo.owner || 'Unknown' };
 
 const write = (file, value) =>
   writeFileSync(join(PLUGIN_DIR, file), `${JSON.stringify(value, null, 2)}\n`);
@@ -98,7 +100,7 @@ write('plugin.json', {
   description: config.site?.description ?? '',
   version: config.defaults?.version ?? '1.0.0',
   author,
-  ...(config.site?.repo ? { homepage: `https://github.com/${config.site.repo}` } : {}),
+  ...(repo.slug ? { homepage: `https://github.com/${repo.slug}` } : {}),
   ...(config.defaults?.license ? { license: config.defaults.license } : {}),
 });
 

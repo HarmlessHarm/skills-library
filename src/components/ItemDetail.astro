@@ -10,12 +10,11 @@ interface Props {
 
 const { item } = Astro.props;
 const { Content } = await render(item.entry);
-const listHref = withBase(`/?type=${item.type}`);
 ---
 
 <div class="wrap">
   <p class="breadcrumb">
-    <a href={withBase('/')}>Home</a> / <a href={listHref}>{item.type === 'skill' ? 'Skills' : 'Commands'}</a>
+    <a href={withBase('/')}>Home</a> / {item.type === 'skill' ? 'Skills' : 'Commands'}
   </p>
 
   <div class="detail">
@@ -25,8 +24,11 @@ const listHref = withBase(`/?type=${item.type}`);
 
       <div class="detail__badges">
         <span class="badge badge--type">{item.type}</span>
-        <span class="badge badge--category">{item.category.label}</span>
-        {item.tags.map((tag) => <a class="badge" href={withBase(`/?tag=${encodeURIComponent(tag)}`)}>{tag}</a>)}
+        {item.tags.map((tag) => (
+          <a class="badge" href={withBase(`/?tag=${encodeURIComponent(tag.id)}`)}>
+            {tag.label}
+          </a>
+        ))}
       </div>
 
       <div class="prose">

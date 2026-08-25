@@ -1,5 +1,5 @@
 ---
-import { config, defaultAgent, repo } from '../lib/config';
+import { config, defaultAgent, maintainer, repo } from '../lib/config';
 import { withBase } from '../lib/url';
 import AgentSelect from '../components/AgentSelect.astro';
 import '../styles/theme.css';
@@ -65,7 +65,7 @@ const agentIds = config.agents.map((a) => a.id);
       <div class="wrap">
         <a class="site-header__brand" href={withBase('/')}>{config.site.title}</a>
         <AgentSelect />
-        <a class="site-header__link" href={`https://github.com/${repo.slug}`} rel="noopener">GitHub</a>
+        <a class="site-header__link" href={repo.url} rel="noopener">GitHub</a>
       </div>
     </header>
 
@@ -75,8 +75,9 @@ const agentIds = config.agents.map((a) => a.id);
 
     <footer class="site-footer">
       <div class="wrap">
-        {config.site.author} · Built with <a href="https://astro.build" rel="noopener">Astro</a> ·
-        <a href={`https://github.com/${repo.slug}`} rel="noopener">Source</a>
+        {maintainer.name && <>{maintainer.name} · </>}Built with{' '}
+        <a href="https://astro.build" rel="noopener">Astro</a> ·
+        <a href={repo.url} rel="noopener">Source</a>
       </div>
     </footer>
   </body>

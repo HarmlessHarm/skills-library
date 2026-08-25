@@ -3,20 +3,26 @@
 #
 # This is the only file you need to edit to make the site your own.
 # Everything here feeds the site, the install snippets and the plugin manifest.
+#
+# Every value below is optional. Left empty, the repository details are worked
+# out from GITHUB_REPOSITORY in CI, or from your `origin` remote locally — so a
+# fresh fork already shows the right owner and links.
 # ---------------------------------------------------------------------------
 
 site:
   title: Skills Library
   tagline: A personal library of agent skills and commands.
   description: Browse, search and install reusable skills and commands for your coding agent.
-  author: Your Name
 
-  # owner/repo — drives "view source", raw file and download links.
-  repo: your-user/skills-library
+  # Displayed as the maintainer. Defaults to the repository owner.
+  author:
+
+  # owner/repo — only set this to override what is detected automatically.
+  repo:
   branch: main
 
-  # Both optional. Leave empty and they are derived from the repository the
-  # GitHub Actions workflow runs in, so a fork deploys correctly with no edits.
+  # Both optional. Leave empty and they are derived from the repository, so a
+  # fork deploys to the correct path with no edits.
   #   url:  https://your-user.github.io
   #   base: /skills-library
   url:
@@ -25,7 +31,6 @@ site:
 # Fallbacks for anything a skill or command leaves out of its frontmatter.
 defaults:
   version: "1.0.0"
-  author: Your Name
   license: MIT
 
 # Quick theming. For full control edit src/styles/theme.css instead.
@@ -36,22 +41,11 @@ theme:
   monoFont: "ui-monospace, SFMono-Regular, Menlo, monospace"
   radius: "12px"
 
-# The order here is the order of the category filter chips.
-# A skill whose category is not listed still shows up, filed under "Other".
-categories:
-  - id: git
-    label: Git
-  - id: testing
-    label: Testing
-  - id: writing
-    label: Writing
-
 # ---------------------------------------------------------------------------
 # Install targets. The dropdown in the header switches between these, and each
 # entry decides what the install snippets say.
 #
-# Placeholders: {name} {owner} {repo} {branch} {rawUrl} {downloadUrl}
-#               {skillDir} {commandPath}
+# Placeholders: {name} {owner} {repo} {branch} {downloadUrl} {skillDir}
 # ---------------------------------------------------------------------------
 defaultAgent: claude
 

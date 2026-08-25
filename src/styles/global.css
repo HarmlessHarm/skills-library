@@ -183,15 +183,28 @@ pre {
 
 /* Filters ----------------------------------------------------------------- */
 
+/* Search and tags share a row at half width each, and stack once there is no
+   longer room for both. */
 .filters {
   padding-block: 1.75rem 0.5rem;
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 1rem;
+}
+
+.filters__search,
+.filters__tags {
+  flex: 1 1 320px;
+  min-width: 0;
 }
 
 .filters__search {
   position: relative;
-  max-width: 460px;
+}
+
+.filters__tags {
+  padding-block: 0.15rem;
 }
 
 .filters__search input {
@@ -264,6 +277,7 @@ pre {
 }
 
 .filters__status {
+  flex: 1 1 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -374,11 +388,6 @@ pre {
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.68rem;
-}
-
-.badge--category {
-  border-color: var(--border-strong);
-  color: var(--text);
 }
 
 /* Detail page ------------------------------------------------------------- */

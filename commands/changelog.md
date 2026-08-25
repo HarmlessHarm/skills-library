@@ -2,7 +2,6 @@
 name: changelog
 title: Changelog
 description: Draft a changelog entry from the commits since the last release tag.
-category: writing
 tags: [example, releases, writing]
 version: 1.0.0
 argument-hint: "[since-tag]"
