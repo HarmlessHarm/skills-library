@@ -1,5 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Robot head">
-  <g fill="none" stroke="#0d1155" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="Robot head">
+  <!-- Off-white disc so the navy linework stays visible on a dark tab bar. -->
+  <circle cx="40" cy="40" r="40" fill="#f8f9fc" />
+
+  <!-- The robot is drawn on a 64x64 grid, offset to sit centred in the disc
+       with enough margin that the ears clear the curve. -->
+  <g
+    transform="translate(8 10)"
+    fill="none"
+    stroke="#0d1155"
+    stroke-width="4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
     <!-- antenna, kept short so the head can fill the canvas at 16px -->
     <path d="M32 11v7" />
     <circle cx="32" cy="7" r="4" fill="#f0325c" />
