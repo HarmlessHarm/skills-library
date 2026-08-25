@@ -88,7 +88,12 @@ for (const file of files(COMMANDS_DIR, '.md')) {
 const repo = resolveRepo(config.site?.repo);
 const pluginName = repo.name || 'skills-library';
 // Same rule as the site: an explicit author wins, otherwise the repo owner.
-const author = { name: config.site?.author || repo.owner || 'Unknown' };
+// `url` is optional in the schema but worth setting — it points attribution at
+// a real profile rather than leaving a bare name.
+const author = {
+  name: config.site?.author || repo.owner || 'Unknown',
+  ...(repo.owner ? { url: `https://github.com/${repo.owner}` } : {}),
+};
 
 const write = (file, value) =>
   writeFileSync(join(PLUGIN_DIR, file), `${JSON.stringify(value, null, 2)}\n`);

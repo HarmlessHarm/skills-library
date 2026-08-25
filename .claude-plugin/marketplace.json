@@ -1,7 +1,8 @@
 {
   "name": "skills-library",
   "owner": {
-    "name": "HarmlessHarm"
+    "name": "HarmlessHarm",
+    "url": "https://github.com/HarmlessHarm"
   },
   "plugins": [
     {

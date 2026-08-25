@@ -35,6 +35,10 @@ with nothing filled in. Set `site.author` only if you want a display name instea
 GitHub username, and `site.repo` only to point at a different repository than the one you are
 building in.
 
+The one thing that cannot be derived at render time is the committed plugin manifest, since
+Claude reads it from the repository. CI rewrites that for you on the first push — see
+[Generated plugin manifests](#generated-plugin-manifests).
+
 ## Adding a skill
 
 Create `skills/<name>/SKILL.md`:
@@ -106,9 +110,24 @@ Everything site-level lives in [`config.yaml`](config.yaml):
 Tag chips are built from the tags your skills and commands actually use, so there is nothing
 to configure.
 
-After editing it, run `npm run build` (or just push — CI does it) so
-`.claude-plugin/marketplace.json` and `plugin.json` are regenerated from your details. **Commit
-those two files**: Claude reads them from your repository, not from the built site.
+### Generated plugin manifests
+
+`.claude-plugin/marketplace.json` and `plugin.json` are generated from `config.yaml` — never
+edit them by hand, your changes will be overwritten. They are the one generated thing that has
+to be **committed**, because Claude reads them from your repository rather than from the built
+site, which is why a template ships them carrying someone else's name.
+
+You do not have to do anything about that. The deploy workflow regenerates them on every push
+and commits them back if they changed, so **your fork re-attributes itself to you on its first
+push** — you will see a `Sync plugin manifests with config.yaml` commit from
+`github-actions[bot]` the first time CI runs. The same step keeps them in sync afterwards, so
+editing `config.yaml` is enough and you never need to remember to rebuild.
+
+Two cases where you should run `npm run build` and commit the result yourself:
+
+- your `main` is protected against direct pushes, so CI cannot commit (the run logs a warning
+  and still deploys), or
+- you want the manifests correct before CI has run for the first time.
 
 ## Theming
 

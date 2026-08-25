@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  # `contents: write` so the build can commit regenerated plugin manifests.
+  contents: write
   pages: write
   id-token: write
 
@@ -25,6 +26,28 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+
+      # .claude-plugin/*.json is generated from config.yaml but has to be
+      # committed, because Claude reads it from the repository rather than from
+      # the built site. Committing it back here is what makes a fork of this
+      # template correctly attributed to its own owner on the first push,
+      # without anyone editing a file.
+      - name: Sync generated plugin manifests
+        run: |
+          if git diff --quiet -- .claude-plugin; then
+            echo "Plugin manifests are already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .claude-plugin
+          git commit -m "Sync plugin manifests with config.yaml"
+
+          # A protected branch is a fair reason for this to fail; the site still
+          # deploys, so warn rather than fail the run.
+          git push || echo "::warning::Could not push the regenerated plugin manifests. Run 'npm run build' locally and commit .claude-plugin/."
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

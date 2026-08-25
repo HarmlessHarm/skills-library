@@ -3,7 +3,8 @@
   "description": "Browse, search and install reusable skills and commands for your coding agent.",
   "version": "1.0.0",
   "author": {
-    "name": "HarmlessHarm"
+    "name": "HarmlessHarm",
+    "url": "https://github.com/HarmlessHarm"
   },
   "homepage": "https://github.com/HarmlessHarm/skills-library",
   "license": "MIT"
