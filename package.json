@@ -1,0 +1,19 @@
+{
+  "name": "skills-library",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "prepare:assets": "node scripts/build-assets.mjs",
+    "dev": "npm run prepare:assets && astro dev",
+    "build": "npm run prepare:assets && astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "yaml": "^2.6.0"
+  },
+  "devDependencies": {
+    "jszip": "^3.10.1"
+  }
+}

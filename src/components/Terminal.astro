@@ -1,0 +1,14 @@
+---
+import CopyButton from './CopyButton.astro';
+
+interface Props {
+  script: string;
+}
+
+const { script } = Astro.props;
+---
+
+<div class="terminal">
+  <pre>{script}</pre>
+  <CopyButton value={script} />
+</div>

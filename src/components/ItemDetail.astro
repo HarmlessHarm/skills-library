@@ -1,0 +1,77 @@
+---
+import { render } from 'astro:content';
+import type { Item } from '../lib/items';
+import { withBase } from '../lib/url';
+import InstallPanel from './InstallPanel.astro';
+
+interface Props {
+  item: Item;
+}
+
+const { item } = Astro.props;
+const { Content } = await render(item.entry);
+const listHref = withBase(`/?type=${item.type}`);
+---
+
+<div class="wrap">
+  <p class="breadcrumb">
+    <a href={withBase('/')}>Home</a> / <a href={listHref}>{item.type === 'skill' ? 'Skills' : 'Commands'}</a>
+  </p>
+
+  <div class="detail">
+    <article>
+      <h1 class="detail__title">{item.title}</h1>
+      <p class="detail__desc">{item.description}</p>
+
+      <div class="detail__badges">
+        <span class="badge badge--type">{item.type}</span>
+        <span class="badge badge--category">{item.category.label}</span>
+        {item.tags.map((tag) => <a class="badge" href={withBase(`/?tag=${encodeURIComponent(tag)}`)}>{tag}</a>)}
+      </div>
+
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+
+    <aside class="detail__aside">
+      <InstallPanel type={item.type} name={item.slug} />
+
+      <section class="panel">
+        <h2>Details</h2>
+        <dl class="meta-list">
+          <div><dt>Name</dt><dd><code>{item.name}</code></dd></div>
+          <div><dt>Version</dt><dd>{item.version}</dd></div>
+          {item.author && <div><dt>Author</dt><dd>{item.author}</dd></div>}
+          {item.license && <div><dt>License</dt><dd>{item.license}</dd></div>}
+          {item.argumentHint && <div><dt>Arguments</dt><dd><code>{item.argumentHint}</code></dd></div>}
+          {item.homepage && <div><dt>Homepage</dt><dd><a href={item.homepage} rel="noopener">Link</a></dd></div>}
+        </dl>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<style>
+  .meta-list {
+    margin: 0;
+    display: grid;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+  }
+
+  .meta-list > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .meta-list dt {
+    color: var(--text-faint);
+  }
+
+  .meta-list dd {
+    margin: 0;
+    text-align: right;
+  }
+</style>

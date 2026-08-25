@@ -1,0 +1,28 @@
+---
+interface Props {
+  value: string;
+  label?: string;
+}
+
+const { value, label = 'Copy' } = Astro.props;
+---
+
+<button class="copy-button" type="button" data-copy={value} data-label={label}>{label}</button>
+
+<script>
+  document.addEventListener('click', async (event) => {
+    const button = (event.target as HTMLElement)?.closest<HTMLButtonElement>('.copy-button');
+    if (!button) return;
+
+    try {
+      await navigator.clipboard.writeText(button.dataset.copy ?? '');
+      button.textContent = 'Copied';
+    } catch {
+      button.textContent = 'Press Ctrl+C';
+    }
+
+    setTimeout(() => {
+      button.textContent = button.dataset.label ?? 'Copy';
+    }, 1600);
+  });
+</script>

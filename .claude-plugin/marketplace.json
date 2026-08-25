@@ -1,0 +1,14 @@
+{
+  "name": "skills-library",
+  "owner": {
+    "name": "Your Name"
+  },
+  "plugins": [
+    {
+      "name": "skills-library",
+      "source": "./",
+      "description": "Browse, search and install reusable skills and commands for your coding agent.",
+      "version": "1.0.0"
+    }
+  ]
+}

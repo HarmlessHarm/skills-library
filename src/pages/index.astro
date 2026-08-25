@@ -1,0 +1,161 @@
+---
+import Base from '../layouts/Base.astro';
+import Filters from '../components/Filters.astro';
+import ItemCard from '../components/ItemCard.astro';
+import Terminal from '../components/Terminal.astro';
+import { config } from '../lib/config';
+import { marketplaceCommand } from '../lib/install';
+import { getItems, getSkills, getCommands, usedCategories, usedTags } from '../lib/items';
+
+const [items, skills, commands] = await Promise.all([getItems(), getSkills(), getCommands()]);
+const categories = usedCategories(items);
+const tags = usedTags(items);
+---
+
+<Base>
+  <section class="hero">
+    <div class="wrap">
+      <h1>{config.site.title}</h1>
+      <p class="hero__tagline">{config.site.tagline}</p>
+
+      <div class="hero__install">
+        <p class="hero__install-label">Add the whole library to Claude Code</p>
+        <Terminal script={marketplaceCommand} />
+      </div>
+
+      <p class="hero__meta">
+        {skills.length} {skills.length === 1 ? 'skill' : 'skills'} · {commands.length}{' '}
+        {commands.length === 1 ? 'command' : 'commands'} · maintained by {config.site.author}
+      </p>
+    </div>
+  </section>
+
+  <Filters categories={categories} tags={tags} skillCount={skills.length} commandCount={commands.length} />
+
+  <div class="wrap">
+    <ul class="grid" id="grid">
+      {items.map((item) => <ItemCard item={item} />)}
+    </ul>
+    <p class="empty" id="empty" hidden>No skills or commands match that search.</p>
+  </div>
+</Base>
+
+<script>
+  // Filtering happens entirely in the DOM over pre-rendered cards: no index to
+  // ship, no data to fetch, and the page works without JavaScript.
+  const search = document.querySelector<HTMLInputElement>('#search');
+  const grid = document.querySelector<HTMLElement>('#grid');
+  const empty = document.querySelector<HTMLElement>('#empty');
+  const count = document.querySelector<HTMLElement>('#result-count');
+  const reset = document.querySelector<HTMLButtonElement>('#reset-filters');
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-item]'));
+
+  const state = { q: '', type: 'all', cat: 'all', tag: '' };
+
+  function setPressed(attribute: string, value: string) {
+    for (const chip of document.querySelectorAll<HTMLElement>(`[${attribute}]`)) {
+      chip.setAttribute('aria-pressed', String(chip.getAttribute(attribute) === value));
+    }
+  }
+
+  function matches(card: HTMLElement) {
+    if (state.type !== 'all' && card.dataset.type !== state.type) return false;
+    if (state.cat !== 'all' && card.dataset.category !== state.cat) return false;
+    if (state.tag && !(card.dataset.tags ?? '').split(',').includes(state.tag)) return false;
+    if (state.q && !(card.dataset.search ?? '').includes(state.q)) return false;
+    return true;
+  }
+
+  function apply(pushUrl = true) {
+    let visible = 0;
+
+    for (const card of cards) {
+      const show = matches(card);
+      (card.parentElement as HTMLElement).hidden = !show;
+      if (show) visible++;
+    }
+
+    empty!.hidden = visible > 0;
+    grid!.hidden = visible === 0;
+    count!.textContent = `${visible} of ${cards.length} shown`;
+
+    const filtered = Boolean(state.q) || state.type !== 'all' || state.cat !== 'all' || Boolean(state.tag);
+    reset!.hidden = !filtered;
+
+    if (pushUrl) {
+      const params = new URLSearchParams();
+      if (state.q) params.set('q', state.q);
+      if (state.type !== 'all') params.set('type', state.type);
+      if (state.cat !== 'all') params.set('cat', state.cat);
+      if (state.tag) params.set('tag', state.tag);
+      const query = params.toString();
+      history.replaceState(null, '', query ? `?${query}` : location.pathname);
+    }
+  }
+
+  // Restore a shared/bookmarked filtered view.
+  const params = new URLSearchParams(location.search);
+  state.q = (params.get('q') ?? '').toLowerCase();
+  state.type = params.get('type') ?? 'all';
+  state.cat = params.get('cat') ?? 'all';
+  state.tag = params.get('tag') ?? '';
+  if (search) search.value = params.get('q') ?? '';
+  setPressed('data-type-filter', state.type);
+  setPressed('data-category-filter', state.cat);
+  setPressed('data-tag-filter', state.tag);
+
+  let timer: ReturnType<typeof setTimeout>;
+  search?.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      state.q = search.value.trim().toLowerCase();
+      apply();
+    }, 120);
+  });
+
+  document.addEventListener('click', (event) => {
+    const chip = (event.target as HTMLElement)?.closest<HTMLElement>('.chip');
+    if (!chip) return;
+
+    if (chip.dataset.typeFilter) {
+      state.type = chip.dataset.typeFilter;
+      setPressed('data-type-filter', state.type);
+    } else if (chip.dataset.categoryFilter) {
+      state.cat = chip.dataset.categoryFilter;
+      setPressed('data-category-filter', state.cat);
+    } else if (chip.dataset.tagFilter) {
+      // Tag chips toggle, so clicking the active one clears it.
+      state.tag = state.tag === chip.dataset.tagFilter ? '' : chip.dataset.tagFilter;
+      setPressed('data-tag-filter', state.tag);
+    } else {
+      return;
+    }
+
+    apply();
+  });
+
+  reset?.addEventListener('click', () => {
+    state.q = '';
+    state.type = 'all';
+    state.cat = 'all';
+    state.tag = '';
+    if (search) search.value = '';
+    setPressed('data-type-filter', 'all');
+    setPressed('data-category-filter', 'all');
+    setPressed('data-tag-filter', '');
+    apply();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const typingElsewhere = document.activeElement instanceof HTMLInputElement;
+    if (event.key === '/' && !typingElsewhere) {
+      event.preventDefault();
+      search?.focus();
+    }
+    if (event.key === 'Escape' && document.activeElement === search) {
+      search?.blur();
+    }
+  });
+
+  apply(false);
+</script>

@@ -1,0 +1,75 @@
+# ---------------------------------------------------------------------------
+# Skills Library configuration
+#
+# This is the only file you need to edit to make the site your own.
+# Everything here feeds the site, the install snippets and the plugin manifest.
+# ---------------------------------------------------------------------------
+
+site:
+  title: Skills Library
+  tagline: A personal library of agent skills and commands.
+  description: Browse, search and install reusable skills and commands for your coding agent.
+  author: Your Name
+
+  # owner/repo — drives "view source", raw file and download links.
+  repo: your-user/skills-library
+  branch: main
+
+  # Both optional. Leave empty and they are derived from the repository the
+  # GitHub Actions workflow runs in, so a fork deploys correctly with no edits.
+  #   url:  https://your-user.github.io
+  #   base: /skills-library
+  url:
+  base:
+
+# Fallbacks for anything a skill or command leaves out of its frontmatter.
+defaults:
+  version: "1.0.0"
+  author: Your Name
+  license: MIT
+
+# Quick theming. For full control edit src/styles/theme.css instead.
+theme:
+  accent: "#4f46e5"
+  accentDark: "#818cf8"
+  font: "system-ui, -apple-system, 'Segoe UI', sans-serif"
+  monoFont: "ui-monospace, SFMono-Regular, Menlo, monospace"
+  radius: "12px"
+
+# The order here is the order of the category filter chips.
+# A skill whose category is not listed still shows up, filed under "Other".
+categories:
+  - id: git
+    label: Git
+  - id: testing
+    label: Testing
+  - id: writing
+    label: Writing
+
+# ---------------------------------------------------------------------------
+# Install targets. The dropdown in the header switches between these, and each
+# entry decides what the install snippets say.
+#
+# Placeholders: {name} {owner} {repo} {branch} {rawUrl} {downloadUrl}
+#               {skillDir} {commandPath}
+# ---------------------------------------------------------------------------
+defaultAgent: claude
+
+agents:
+  - id: claude
+    label: Claude Code
+    skillDir: ~/.claude/skills
+    commandPath: ~/.claude/commands/{name}.md
+    docs: https://code.claude.com/docs/en/skills
+
+  - id: codex
+    label: Codex
+    skillDir: ~/.codex/skills
+    commandPath: ~/.codex/prompts/{name}.md
+    docs: https://developers.openai.com/codex/skills
+
+  - id: copilot
+    label: GitHub Copilot
+    skillDir: ~/.copilot/skills
+    commandPath: .github/prompts/{name}.prompt.md
+    docs: https://docs.github.com/en/copilot/concepts/agents/about-agent-skills

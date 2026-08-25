@@ -1,0 +1,42 @@
+---
+import type { Item } from '../lib/items';
+import { withBase } from '../lib/url';
+
+interface Props {
+  item: Item;
+}
+
+const { item } = Astro.props;
+const href = withBase(`/${item.type === 'skill' ? 'skills' : 'commands'}/${item.slug}/`);
+
+// The filter script reads these attributes; keeping the haystack pre-lowercased
+// keeps filtering cheap on every keystroke.
+const haystack = [item.name, item.title, item.description, item.category.label, ...item.tags]
+  .join(' ')
+  .toLowerCase();
+---
+
+<li>
+  <a
+    class="card"
+    href={href}
+    data-item
+    data-type={item.type}
+    data-category={item.category.id}
+    data-tags={item.tags.join(',')}
+    data-search={haystack}
+  >
+    <div class="card__head">
+      <h2 class="card__title">{item.title}</h2>
+      <span class="badge badge--type">{item.type}</span>
+    </div>
+
+    <p class="card__desc">{item.description}</p>
+
+    <div class="card__meta">
+      <span class="badge badge--category">{item.category.label}</span>
+      {item.tags.slice(0, 3).map((tag) => <span class="badge">{tag}</span>)}
+      {item.tags.length > 3 && <span class="badge">+{item.tags.length - 3}</span>}
+    </div>
+  </a>
+</li>

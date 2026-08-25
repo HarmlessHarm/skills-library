@@ -1,0 +1,72 @@
+---
+import type { CategoryConfig } from '../lib/config';
+
+interface Props {
+  categories: CategoryConfig[];
+  tags: { tag: string; count: number }[];
+  skillCount: number;
+  commandCount: number;
+}
+
+const { categories, tags, skillCount, commandCount } = Astro.props;
+
+const types = [
+  { id: 'all', label: 'All' },
+  { id: 'skill', label: `Skills (${skillCount})` },
+  { id: 'command', label: `Commands (${commandCount})` },
+];
+---
+
+<div class="wrap filters">
+  <div class="filters__search">
+    <label class="visually-hidden" for="search">Search skills and commands</label>
+    <input id="search" type="search" placeholder="Search by name, tag or category…" autocomplete="off" />
+    <kbd class="filters__shortcut">/</kbd>
+  </div>
+
+  <div class="chips" role="group" aria-label="Filter by type">
+    <span class="chips__label">Type</span>
+    {
+      types.map((type) => (
+        <button class="chip" type="button" data-type-filter={type.id} aria-pressed={type.id === 'all'}>
+          {type.label}
+        </button>
+      ))
+    }
+  </div>
+
+  {
+    categories.length > 0 && (
+      <div class="chips" role="group" aria-label="Filter by category">
+        <span class="chips__label">Category</span>
+        <button class="chip" type="button" data-category-filter="all" aria-pressed="true">
+          All
+        </button>
+        {categories.map((category) => (
+          <button class="chip" type="button" data-category-filter={category.id} aria-pressed="false">
+            {category.label}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  {
+    tags.length > 0 && (
+      <div class="chips" role="group" aria-label="Filter by tag">
+        <span class="chips__label">Tags</span>
+        {tags.map(({ tag, count }) => (
+          <button class="chip" type="button" data-tag-filter={tag} aria-pressed="false">
+            {tag}
+            <span class="chip__count">{count}</span>
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  <p class="filters__status">
+    <span id="result-count" aria-live="polite" />
+    <button class="filters__reset" type="button" id="reset-filters" hidden>Clear filters</button>
+  </p>
+</div>
