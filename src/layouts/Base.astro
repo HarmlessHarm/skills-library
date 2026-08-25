@@ -1,0 +1,83 @@
+---
+import { config, defaultAgent, repo } from '../lib/config';
+import { withBase } from '../lib/url';
+import AgentSelect from '../components/AgentSelect.astro';
+import '../styles/theme.css';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = config.site.description } = Astro.props;
+const pageTitle = title ? `${title} · ${config.site.title}` : config.site.title;
+
+// config.yaml `theme:` overrides the defaults in theme.css. Only keys that are
+// actually set are emitted, so an empty theme block changes nothing.
+const themeVars = Object.entries({
+  '--accent': config.theme.accent,
+  '--accent-dark': config.theme.accentDark,
+  '--font': config.theme.font,
+  '--font-mono': config.theme.monoFont,
+  '--radius': config.theme.radius,
+})
+  .filter(([, value]) => Boolean(value))
+  .map(([key, value]) => `${key}: ${value};`)
+  .join(' ');
+
+// One visibility rule per agent, plus a no-JS fallback to the default agent.
+const agentRules = [
+  ...config.agents.map(
+    (agent) => `html[data-agent="${agent.id}"] .agent-block[data-agent-id="${agent.id}"] { display: block; }`,
+  ),
+  `html:not([data-agent]) .agent-block[data-agent-id="${defaultAgent.id}"] { display: block; }`,
+].join('\n');
+
+const agentIds = config.agents.map((a) => a.id);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    {themeVars && <style set:html={`:root { ${themeVars} }`} />}
+    <style set:html={agentRules} />
+    <script is:inline define:vars={{ agentIds, fallback: defaultAgent.id }}>
+      // Runs before first paint so the correct install snippet is the only one
+      // ever painted.
+      try {
+        const stored = localStorage.getItem('agent');
+        document.documentElement.dataset.agent = agentIds.includes(stored) ? stored : fallback;
+      } catch {
+        document.documentElement.dataset.agent = fallback;
+      }
+    </script>
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="site-header__brand" href={withBase('/')}>{config.site.title}</a>
+        <AgentSelect />
+        <a class="site-header__link" href={`https://github.com/${repo.slug}`} rel="noopener">GitHub</a>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        {config.site.author} · Built with <a href="https://astro.build" rel="noopener">Astro</a> ·
+        <a href={`https://github.com/${repo.slug}`} rel="noopener">Source</a>
+      </div>
+    </footer>
+  </body>
+</html>

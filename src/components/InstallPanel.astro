@@ -1,0 +1,48 @@
+---
+import { installSnippets, downloadUrl, sourceUrl, type ItemType } from '../lib/install';
+import Terminal from './Terminal.astro';
+
+interface Props {
+  type: ItemType;
+  name: string;
+}
+
+const { type, name } = Astro.props;
+const snippets = installSnippets(type, name, Astro.site);
+const download = downloadUrl(type, name, undefined); // site-relative, for the button
+const source = sourceUrl(type, name);
+const fileName = type === 'skill' ? `${name}.skill` : `${name}.md`;
+---
+
+<section class="panel">
+  <h2>Install</h2>
+
+  {
+    snippets.map(({ agent, script, destination }) => (
+      <div class="agent-block" data-agent-id={agent.id}>
+        <Terminal script={script} />
+        <p class="panel__note">
+          <span>Installs to <code>{destination}</code></span>
+          {agent.docs && (
+            <a href={agent.docs} rel="noopener">
+              {agent.label} docs →
+            </a>
+          )}
+        </p>
+      </div>
+    ))
+  }
+</section>
+
+<section class="panel">
+  <h2>Download</h2>
+  <a class="button" href={download} download>Download {fileName}</a>
+  <a class="button button--secondary" href={source} rel="noopener">View source on GitHub</a>
+  <p class="panel__note">
+    {
+      type === 'skill'
+        ? 'A zip archive of the skill folder — SKILL.md plus any supporting files.'
+        : 'The command file itself, ready to drop into your agent’s commands folder.'
+    }
+  </p>
+</section>

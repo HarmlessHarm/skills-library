@@ -1,0 +1,36 @@
+---
+import { config, defaultAgent } from '../lib/config';
+---
+
+<label class="agent-select">
+  <span>Install for</span>
+  <select id="agent-select" aria-label="Choose which agent install instructions are shown">
+    {
+      config.agents.map((agent) => (
+        <option value={agent.id} selected={agent.id === defaultAgent.id}>
+          {agent.label}
+        </option>
+      ))
+    }
+  </select>
+</label>
+
+<script>
+  const select = document.querySelector<HTMLSelectElement>('#agent-select');
+
+  if (select) {
+    // The <head> script already resolved the stored choice; mirror it here so
+    // the dropdown agrees with what is on screen.
+    const current = document.documentElement.dataset.agent;
+    if (current) select.value = current;
+
+    select.addEventListener('change', () => {
+      document.documentElement.dataset.agent = select.value;
+      try {
+        localStorage.setItem('agent', select.value);
+      } catch {
+        // Private browsing — the choice just will not persist.
+      }
+    });
+  }
+</script>

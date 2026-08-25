@@ -1,0 +1,173 @@
+# Skills Library
+
+A template for publishing your own library of agent skills and commands as a
+GitHub Pages site — searchable, filterable, and installable into Claude Code,
+Codex or GitHub Copilot in one command.
+
+Fork it, edit one YAML file, drop your skills in, and push.
+
+---
+
+## What you get
+
+- **A browsable site** — hero, search, category and tag filters, one tile per item.
+- **Search** across name, description, category and tags, with shareable filter URLs.
+- **Per-agent install instructions** — a dropdown in the header switches every snippet on the
+  site between Claude Code, Codex and Copilot. The choice is remembered.
+- **Downloadable `.skill` bundles** — each skill folder zipped, supporting files included.
+- **A Claude plugin marketplace entry**, so the whole library installs with one command.
+- **Automatic deploys** to GitHub Pages on every push to `main`.
+
+Only skills and commands. No plugin browsing, no other content types.
+
+## Setup
+
+1. Click **Use this template** → create your repository.
+2. In your new repo: **Settings ▸ Pages ▸ Build and deployment ▸ Source: GitHub Actions**.
+3. Edit [`config.yaml`](config.yaml) — at minimum `site.title`, `site.author` and `site.repo`.
+4. Push. The workflow builds and deploys; your site appears at
+   `https://<you>.github.io/<repo>/`.
+
+You do not need to set `site.url` or `site.base`. They are derived from the repository the
+workflow runs in, so a fork deploys to the right path with no edits.
+
+## Adding a skill
+
+Create `skills/<name>/SKILL.md`:
+
+```markdown
+---
+name: my-skill
+description: What this does, and when an agent should reach for it.
+title: My Skill
+category: git
+tags: [git, review]
+version: 1.0.0
+---
+
+# My Skill
+
+Your instructions go here.
+```
+
+`name` and `description` are the only fields the [Agent Skills](https://agentskills.io)
+specification requires — everything else is optional and only feeds this site:
+
+| Field         | Purpose                                                        |
+| ------------- | -------------------------------------------------------------- |
+| `name`        | **Required.** Folder-safe identifier, used in install commands  |
+| `description` | **Required.** How an agent decides whether to load the skill    |
+| `title`       | Display name on the card. Defaults to a title-cased `name`      |
+| `category`    | Which filter chip it lands under. See `categories:` in config   |
+| `tags`        | Tag chips and search terms                                      |
+| `version`     | Shown on the detail page. Falls back to `defaults.version`      |
+| `author`      | Falls back to `defaults.author`                                 |
+| `license`     | Falls back to `defaults.license`                                |
+| `homepage`    | Optional external link                                          |
+
+Add supporting files (`reference.md`, scripts, templates) beside `SKILL.md` — they are bundled
+into the downloadable `.skill` archive automatically. Relative links in the body are rewritten
+to point at the file in your repository, so they work on the site too.
+
+A category not listed in `config.yaml` still works; it just gets its own chip and a build
+warning.
+
+## Adding a command
+
+Create `commands/<name>.md` — a single file, matching Claude Code's convention:
+
+```markdown
+---
+name: my-command
+description: One line describing what running this does.
+category: writing
+tags: [releases]
+argument-hint: "[branch]"
+---
+
+The prompt the command runs.
+```
+
+`argument-hint` and `model` are also accepted and shown on the detail page.
+
+## Configuration
+
+Everything site-level lives in [`config.yaml`](config.yaml):
+
+| Block        | What it controls                                                       |
+| ------------ | ---------------------------------------------------------------------- |
+| `site`       | Title, tagline, author, repository, and optional URL/base overrides     |
+| `defaults`   | Version, author and license for items that omit them                    |
+| `theme`      | Accent colour, fonts and corner radius                                  |
+| `categories` | The category chips, in the order they appear                            |
+| `agents`     | The install targets in the header dropdown                              |
+
+After editing it, run `npm run build` (or just push — CI does it) so
+`.claude-plugin/marketplace.json` and `plugin.json` are regenerated from your details. **Commit
+those two files**: Claude reads them from your repository, not from the built site.
+
+## Theming
+
+Two levels, depending on how far you want to go:
+
+- **Quick** — set `theme.accent`, `theme.accentDark`, `theme.font`, `theme.monoFont` and
+  `theme.radius` in `config.yaml`. They are injected as CSS variables and override the defaults.
+- **Full** — edit [`src/styles/theme.css`](src/styles/theme.css). Every colour, radius, shadow
+  and width on the site is a custom property defined there, in both light and dark mode.
+  Components reference tokens only and never a literal colour, so changing a token changes the
+  whole site.
+
+Layout lives in [`src/styles/global.css`](src/styles/global.css) if you want to go further.
+
+## Install targets
+
+The header dropdown decides which install snippet is shown, everywhere, at once. Each entry
+under `agents:` in `config.yaml` defines one:
+
+```yaml
+- id: claude
+  label: Claude Code
+  skillDir: ~/.claude/skills
+  commandPath: ~/.claude/commands/{name}.md
+  docs: https://code.claude.com/docs/en/skills
+```
+
+Adding a fourth agent means adding a fourth entry — no code change. Available placeholders:
+`{name}`, `{owner}`, `{repo}`, `{branch}`, `{downloadUrl}`, `{skillDir}`.
+
+All three shipped agents read the same `SKILL.md` format; they differ only in where the files
+go. If a vendor moves a directory, fix it here and every snippet on the site follows.
+
+Every snippet is rendered into the page at build time and one is revealed with CSS, so the
+right instructions show before the page paints and the site still works with JavaScript off.
+
+## Local development
+
+```bash
+npm install
+npm run dev      # http://localhost:4321/<base>/
+npm run build    # static output in dist/
+npm run preview  # serve dist/ with the correct base path
+```
+
+`npm run dev` and `npm run build` both run `scripts/build-assets.mjs` first, which zips the
+`.skill` bundles into `public/downloads/` (gitignored) and regenerates the plugin manifests.
+
+## Project structure
+
+```
+config.yaml              Site configuration — the file you edit
+skills/<name>/SKILL.md   One folder per skill, plus any supporting files
+commands/<name>.md       One file per command
+src/styles/theme.css     Design tokens
+src/lib/                 Config loading, install snippets, item normalisation
+scripts/build-assets.mjs Bundles .skill files, regenerates plugin manifests
+.claude-plugin/          Generated marketplace manifests (committed)
+```
+
+Built with [Astro](https://astro.build). No UI framework, no client-side data fetching —
+filtering runs over pre-rendered cards in the DOM.
+
+## License
+
+MIT. Replace this section with your own terms if you fork it.

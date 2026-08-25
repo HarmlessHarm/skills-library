@@ -1,0 +1,16 @@
+---
+import Base from '../../layouts/Base.astro';
+import ItemDetail from '../../components/ItemDetail.astro';
+import { getSkills } from '../../lib/items';
+
+export async function getStaticPaths() {
+  const skills = await getSkills();
+  return skills.map((item) => ({ params: { slug: item.slug }, props: { item } }));
+}
+
+const { item } = Astro.props;
+---
+
+<Base title={item.title} description={item.description}>
+  <ItemDetail item={item} />
+</Base>

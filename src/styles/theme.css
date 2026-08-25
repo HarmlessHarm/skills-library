@@ -1,0 +1,70 @@
+/* ===========================================================================
+   Theme tokens — this is the file to edit to restyle the whole site.
+   Every component references these variables and never a literal colour.
+
+   For quick tweaks (accent, font, radius) you can instead set `theme:` in
+   config.yaml; those values are injected after this file and win.
+   =========================================================================== */
+
+:root {
+  /* Brand ---------------------------------------------------------------- */
+  --accent: #4f46e5;
+  --accent-contrast: #ffffff;
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+
+  /* Surfaces ------------------------------------------------------------- */
+  --bg: #ffffff;
+  --bg-subtle: #f6f7f9;
+  --surface: #ffffff;
+  --surface-hover: #fafbfc;
+  --border: #e3e6ea;
+  --border-strong: #cdd2d9;
+
+  /* Text ----------------------------------------------------------------- */
+  --text: #16181d;
+  --text-muted: #5c6470;
+  --text-faint: #868e9b;
+
+  /* Code ----------------------------------------------------------------- */
+  --code-bg: #f4f5f7;
+  --code-text: #1f2430;
+  --terminal-bg: #16181d;
+  --terminal-text: #e7e9ee;
+
+  /* Shape and type ------------------------------------------------------- */
+  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius: 12px;
+  --radius-sm: 7px;
+  --radius-pill: 999px;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-lifted: 0 6px 20px rgb(0 0 0 / 0.09);
+  --content-width: 1120px;
+  --prose-width: 72ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent: var(--accent-dark, #818cf8);
+    --accent-contrast: #10121a;
+
+    --bg: #0e1014;
+    --bg-subtle: #14171d;
+    --surface: #161a21;
+    --surface-hover: #1c212a;
+    --border: #262c36;
+    --border-strong: #38404d;
+
+    --text: #e9ecf1;
+    --text-muted: #a4adbb;
+    --text-faint: #7b8593;
+
+    --code-bg: #1a1f27;
+    --code-text: #dfe4ec;
+    --terminal-bg: #090b0f;
+    --terminal-text: #e2e6ee;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-lifted: 0 6px 22px rgb(0 0 0 / 0.5);
+  }
+}
