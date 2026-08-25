@@ -2,8 +2,7 @@
 name: hello-world
 title: Hello World
 description: A minimal example skill. Use it as the starting point when creating your own skill in this library.
-category: writing
-tags: [example, starter]
+tags: [example, starter, writing]
 version: 1.0.0
 ---
 
@@ -15,8 +14,11 @@ Copy this folder, rename it, and rewrite the two required frontmatter fields.
 ## Frontmatter
 
 Only `name` and `description` are required by the [Agent Skills](https://agentskills.io)
-specification. This library reads a few optional extras — `title`, `category`, `tags`,
-`version`, `author` — to build the cards, the filters and the detail page.
+specification. This library reads a few optional extras — `title`, `tags`, `version`,
+`author` — to build the cards, the filters and the detail page.
+
+Tags are free-form and you can add as many as you like. They are matched
+case-insensitively and shown capitalised, so `pull-request` becomes `Pull Request`.
 
 The `description` is what an agent reads to decide whether to load the skill, so write it as
 "what this does, and when to use it" rather than a label.

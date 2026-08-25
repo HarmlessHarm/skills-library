@@ -3,13 +3,17 @@ import Base from '../layouts/Base.astro';
 import Filters from '../components/Filters.astro';
 import ItemCard from '../components/ItemCard.astro';
 import Terminal from '../components/Terminal.astro';
-import { config } from '../lib/config';
+import { config, maintainer } from '../lib/config';
 import { marketplaceCommand } from '../lib/install';
-import { getItems, getSkills, getCommands, usedCategories, usedTags } from '../lib/items';
+import { getItems, getSkills, getCommands, usedTags } from '../lib/items';
 
 const [items, skills, commands] = await Promise.all([getItems(), getSkills(), getCommands()]);
-const categories = usedCategories(items);
 const tags = usedTags(items);
+
+// Built as one string so the markup below cannot introduce stray whitespace
+// between the counts and the separators.
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+const counts = `${plural(skills.length, 'skill')} · ${plural(commands.length, 'command')}`;
 ---
 
 <Base>
@@ -24,13 +28,26 @@ const tags = usedTags(items);
       </div>
 
       <p class="hero__meta">
-        {skills.length} {skills.length === 1 ? 'skill' : 'skills'} · {commands.length}{' '}
-        {commands.length === 1 ? 'command' : 'commands'} · maintained by {config.site.author}
+        <span>{counts}</span>
+        {
+          maintainer.name && (
+            <span>
+              {' · maintained by '}
+              {maintainer.url ? (
+                <a href={maintainer.url} rel="noopener">
+                  {maintainer.name}
+                </a>
+              ) : (
+                maintainer.name
+              )}
+            </span>
+          )
+        }
       </p>
     </div>
   </section>
 
-  <Filters categories={categories} tags={tags} skillCount={skills.length} commandCount={commands.length} />
+  <Filters tags={tags} />
 
   <div class="wrap">
     <ul class="grid" id="grid">
@@ -50,17 +67,15 @@ const tags = usedTags(items);
   const reset = document.querySelector<HTMLButtonElement>('#reset-filters');
   const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-item]'));
 
-  const state = { q: '', type: 'all', cat: 'all', tag: '' };
+  const state = { q: '', tag: '' };
 
-  function setPressed(attribute: string, value: string) {
-    for (const chip of document.querySelectorAll<HTMLElement>(`[${attribute}]`)) {
-      chip.setAttribute('aria-pressed', String(chip.getAttribute(attribute) === value));
+  function setPressed(value: string) {
+    for (const chip of document.querySelectorAll<HTMLElement>('[data-tag-filter]')) {
+      chip.setAttribute('aria-pressed', String(chip.dataset.tagFilter === value));
     }
   }
 
   function matches(card: HTMLElement) {
-    if (state.type !== 'all' && card.dataset.type !== state.type) return false;
-    if (state.cat !== 'all' && card.dataset.category !== state.cat) return false;
     if (state.tag && !(card.dataset.tags ?? '').split(',').includes(state.tag)) return false;
     if (state.q && !(card.dataset.search ?? '').includes(state.q)) return false;
     return true;
@@ -79,14 +94,12 @@ const tags = usedTags(items);
     grid!.hidden = visible === 0;
     count!.textContent = `${visible} of ${cards.length} shown`;
 
-    const filtered = Boolean(state.q) || state.type !== 'all' || state.cat !== 'all' || Boolean(state.tag);
+    const filtered = Boolean(state.q) || Boolean(state.tag);
     reset!.hidden = !filtered;
 
     if (pushUrl) {
       const params = new URLSearchParams();
       if (state.q) params.set('q', state.q);
-      if (state.type !== 'all') params.set('type', state.type);
-      if (state.cat !== 'all') params.set('cat', state.cat);
       if (state.tag) params.set('tag', state.tag);
       const query = params.toString();
       history.replaceState(null, '', query ? `?${query}` : location.pathname);
@@ -96,13 +109,9 @@ const tags = usedTags(items);
   // Restore a shared/bookmarked filtered view.
   const params = new URLSearchParams(location.search);
   state.q = (params.get('q') ?? '').toLowerCase();
-  state.type = params.get('type') ?? 'all';
-  state.cat = params.get('cat') ?? 'all';
-  state.tag = params.get('tag') ?? '';
+  state.tag = (params.get('tag') ?? '').toLowerCase();
   if (search) search.value = params.get('q') ?? '';
-  setPressed('data-type-filter', state.type);
-  setPressed('data-category-filter', state.cat);
-  setPressed('data-tag-filter', state.tag);
+  setPressed(state.tag);
 
   let timer: ReturnType<typeof setTimeout>;
   search?.addEventListener('input', () => {
@@ -114,35 +123,20 @@ const tags = usedTags(items);
   });
 
   document.addEventListener('click', (event) => {
-    const chip = (event.target as HTMLElement)?.closest<HTMLElement>('.chip');
+    const chip = (event.target as HTMLElement)?.closest<HTMLElement>('[data-tag-filter]');
     if (!chip) return;
 
-    if (chip.dataset.typeFilter) {
-      state.type = chip.dataset.typeFilter;
-      setPressed('data-type-filter', state.type);
-    } else if (chip.dataset.categoryFilter) {
-      state.cat = chip.dataset.categoryFilter;
-      setPressed('data-category-filter', state.cat);
-    } else if (chip.dataset.tagFilter) {
-      // Tag chips toggle, so clicking the active one clears it.
-      state.tag = state.tag === chip.dataset.tagFilter ? '' : chip.dataset.tagFilter;
-      setPressed('data-tag-filter', state.tag);
-    } else {
-      return;
-    }
-
+    // Tag chips toggle, so clicking the active one clears it.
+    state.tag = state.tag === chip.dataset.tagFilter ? '' : (chip.dataset.tagFilter ?? '');
+    setPressed(state.tag);
     apply();
   });
 
   reset?.addEventListener('click', () => {
     state.q = '';
-    state.type = 'all';
-    state.cat = 'all';
     state.tag = '';
     if (search) search.value = '';
-    setPressed('data-type-filter', 'all');
-    setPressed('data-category-filter', 'all');
-    setPressed('data-tag-filter', '');
+    setPressed('');
     apply();
   });
 

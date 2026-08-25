@@ -9,9 +9,10 @@
  */
 import { readFileSync } from 'node:fs';
 import { parse } from 'yaml';
+import { resolveRepo } from '../src/lib/repo.mjs';
 
 const config = parse(readFileSync(new URL('../config.yaml', import.meta.url), 'utf8'));
-const repo = config.site?.repo ?? '';
+const repo = resolveRepo(config.site?.repo).slug;
 const branch = config.site?.branch || 'main';
 
 const isExternal = (url) => !url || /^(?:[a-z]+:|\/\/|\/|#)/i.test(url);

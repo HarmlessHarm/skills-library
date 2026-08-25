@@ -2,8 +2,7 @@
 name: commit-helper
 title: Commit Helper
 description: Write clear conventional-commit messages from a staged diff. Use when committing changes or when asked to tidy up a commit message.
-category: git
-tags: [git, commits, conventions]
+tags: [git, commits, conventions, pull-request]
 version: 1.0.0
 ---
 
