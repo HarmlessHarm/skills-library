@@ -2,34 +2,43 @@
    Theme tokens — this is the file to edit to restyle the whole site.
    Every component references these variables and never a literal colour.
 
+   Colours are written as light-dark(light, dark), so each one is declared
+   once with both of its values. Which half applies is decided by the
+   `color-scheme` property at the bottom of this file: the site follows the
+   viewer's system setting until they pick light or dark from the header,
+   which sets data-theme on <html>.
+
    For quick tweaks (accent, font, radius) you can instead set `theme:` in
    config.yaml; those values are injected after this file and win.
    =========================================================================== */
 
 :root {
+  /* Follow the system setting unless the viewer has chosen otherwise. */
+  color-scheme: light dark;
+
   /* Brand ---------------------------------------------------------------- */
-  --accent: #4f46e5;
-  --accent-contrast: #ffffff;
+  --accent: light-dark(#4f46e5, #818cf8);
+  --accent-contrast: light-dark(#ffffff, #10121a);
   --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
 
   /* Surfaces ------------------------------------------------------------- */
-  --bg: #ffffff;
-  --bg-subtle: #f6f7f9;
-  --surface: #ffffff;
-  --surface-hover: #fafbfc;
-  --border: #e3e6ea;
-  --border-strong: #cdd2d9;
+  --bg: light-dark(#ffffff, #0e1014);
+  --bg-subtle: light-dark(#f6f7f9, #14171d);
+  --surface: light-dark(#ffffff, #161a21);
+  --surface-hover: light-dark(#fafbfc, #1c212a);
+  --border: light-dark(#e3e6ea, #262c36);
+  --border-strong: light-dark(#cdd2d9, #38404d);
 
   /* Text ----------------------------------------------------------------- */
-  --text: #16181d;
-  --text-muted: #5c6470;
-  --text-faint: #868e9b;
+  --text: light-dark(#16181d, #e9ecf1);
+  --text-muted: light-dark(#5c6470, #a4adbb);
+  --text-faint: light-dark(#868e9b, #7b8593);
 
   /* Code ----------------------------------------------------------------- */
-  --code-bg: #f4f5f7;
-  --code-text: #1f2430;
-  --terminal-bg: #16181d;
-  --terminal-text: #e7e9ee;
+  --code-bg: light-dark(#f4f5f7, #1a1f27);
+  --code-text: light-dark(#1f2430, #dfe4ec);
+  --terminal-bg: light-dark(#16181d, #090b0f);
+  --terminal-text: light-dark(#e7e9ee, #e2e6ee);
 
   /* Shape and type ------------------------------------------------------- */
   --font: system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -37,34 +46,18 @@
   --radius: 12px;
   --radius-sm: 7px;
   --radius-pill: 999px;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.05);
-  --shadow-lifted: 0 6px 20px rgb(0 0 0 / 0.09);
+  --shadow: 0 1px 2px light-dark(rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.4));
+  --shadow-lifted: 0 6px 20px light-dark(rgb(0 0 0 / 0.09), rgb(0 0 0 / 0.5));
   --content-width: 1120px;
   --prose-width: 72ch;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --accent: var(--accent-dark, #818cf8);
-    --accent-contrast: #10121a;
+/* The header toggle sets data-theme; without it the system setting decides,
+   which is also what happens with JavaScript disabled. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
 
-    --bg: #0e1014;
-    --bg-subtle: #14171d;
-    --surface: #161a21;
-    --surface-hover: #1c212a;
-    --border: #262c36;
-    --border-strong: #38404d;
-
-    --text: #e9ecf1;
-    --text-muted: #a4adbb;
-    --text-faint: #7b8593;
-
-    --code-bg: #1a1f27;
-    --code-text: #dfe4ec;
-    --terminal-bg: #090b0f;
-    --terminal-text: #e2e6ee;
-
-    --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-lifted: 0 6px 22px rgb(0 0 0 / 0.5);
-  }
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }

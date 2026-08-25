@@ -2,6 +2,7 @@
 import { config, defaultAgent, maintainer, repo } from '../lib/config';
 import { withBase } from '../lib/url';
 import AgentSelect from '../components/AgentSelect.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 import '../styles/theme.css';
 import '../styles/global.css';
 
@@ -15,12 +16,15 @@ const pageTitle = title ? `${title} · ${config.site.title}` : config.site.title
 
 // config.yaml `theme:` overrides the defaults in theme.css. Only keys that are
 // actually set are emitted, so an empty theme block changes nothing.
+// The accent keeps its light/dark pair so the override survives theme changes;
+// with only `accent` set, the same colour is used in both.
+const { accent, accentDark, font, monoFont, radius } = config.theme;
+
 const themeVars = Object.entries({
-  '--accent': config.theme.accent,
-  '--accent-dark': config.theme.accentDark,
-  '--font': config.theme.font,
-  '--font-mono': config.theme.monoFont,
-  '--radius': config.theme.radius,
+  '--accent': accent && `light-dark(${accent}, ${accentDark || accent})`,
+  '--font': font,
+  '--font-mono': monoFont,
+  '--radius': radius,
 })
   .filter(([, value]) => Boolean(value))
   .map(([key, value]) => `${key}: ${value};`)
@@ -46,16 +50,30 @@ const agentIds = config.agents.map((a) => a.id);
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
-    {themeVars && <style set:html={`:root { ${themeVars} }`} />}
+    {/* `:root:root` rather than `:root` on purpose: Astro emits its bundled
+        stylesheet after this tag, so at equal specificity theme.css would win
+        on source order and these overrides would silently do nothing. */}
+    {themeVars && <style set:html={`:root:root { ${themeVars} }`} />}
     <style set:html={agentRules} />
     <script is:inline define:vars={{ agentIds, fallback: defaultAgent.id }}>
-      // Runs before first paint so the correct install snippet is the only one
-      // ever painted.
+      // Runs before first paint, so the correct install snippet is the only one
+      // ever painted and the theme never flashes.
       try {
-        const stored = localStorage.getItem('agent');
-        document.documentElement.dataset.agent = agentIds.includes(stored) ? stored : fallback;
+        const agent = localStorage.getItem('agent');
+        document.documentElement.dataset.agent = agentIds.includes(agent) ? agent : fallback;
       } catch {
         document.documentElement.dataset.agent = fallback;
+      }
+
+      try {
+        const theme = localStorage.getItem('theme');
+        // Anything else — including "system" — leaves the attribute off, which
+        // is what makes theme.css fall through to the OS setting.
+        if (theme === 'light' || theme === 'dark') {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {
+        /* Private browsing — fall through to the system setting. */
       }
     </script>
   </head>
@@ -65,6 +83,7 @@ const agentIds = config.agents.map((a) => a.id);
       <div class="wrap">
         <a class="site-header__brand" href={withBase('/')}>{config.site.title}</a>
         <AgentSelect />
+        <ThemeToggle />
         <a class="site-header__link" href={repo.url} rel="noopener">GitHub</a>
       </div>
     </header>
