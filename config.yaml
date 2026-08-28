@@ -45,7 +45,10 @@ theme:
 # Install targets. The dropdown in the header switches between these, and each
 # entry decides what the install snippets say.
 #
-# Placeholders: {name} {owner} {repo} {branch} {downloadUrl} {skillDir}
+# `marketplace` is the command that installs the whole library at once. Leave
+# it out for an agent with no plugin ecosystem and the hero hides that block.
+#
+# Placeholders: {name} {owner} {repo} {branch} {slug} {downloadUrl} {skillDir}
 # ---------------------------------------------------------------------------
 defaultAgent: claude
 
@@ -54,12 +57,14 @@ agents:
     label: Claude Code
     skillDir: ~/.claude/skills
     commandPath: ~/.claude/commands/{name}.md
+    marketplace: /plugin marketplace add {slug}
     docs: https://code.claude.com/docs/en/skills
 
   - id: codex
     label: Codex
     skillDir: ~/.codex/skills
     commandPath: ~/.codex/prompts/{name}.md
+    marketplace: codex plugin marketplace add {slug}
     docs: https://developers.openai.com/codex/skills
 
   - id: copilot

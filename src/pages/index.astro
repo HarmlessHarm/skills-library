@@ -4,11 +4,15 @@ import Filters from '../components/Filters.astro';
 import ItemCard from '../components/ItemCard.astro';
 import Terminal from '../components/Terminal.astro';
 import { config, maintainer } from '../lib/config';
-import { marketplaceCommand } from '../lib/install';
+import { marketplaceSnippets } from '../lib/install';
 import { getItems, getSkills, getCommands, usedTags } from '../lib/items';
 
 const [items, skills, commands] = await Promise.all([getItems(), getSkills(), getCommands()]);
 const tags = usedTags(items);
+
+const marketplaces = marketplaceSnippets();
+const withMarketplace = new Set(marketplaces.map((m) => m.agent.id));
+const noMarketplace = config.agents.filter((agent) => !withMarketplace.has(agent.id));
 
 // Built as one string so the markup below cannot introduce stray whitespace
 // between the counts and the separators.
@@ -23,8 +27,27 @@ const counts = `${plural(skills.length, 'skill')} · ${plural(commands.length, '
       <p class="hero__tagline">{config.site.tagline}</p>
 
       <div class="hero__install">
-        <p class="hero__install-label">Add the whole library to Claude Code</p>
-        <Terminal script={marketplaceCommand} />
+        {
+          marketplaces.map(({ agent, script }) => (
+            <div class="agent-block" data-agent-id={agent.id}>
+              <p class="hero__install-label">Add the whole library to {agent.label}</p>
+              <Terminal script={script} />
+            </div>
+          ))
+        }
+        {
+          /* Agents with no plugin ecosystem still get a line here, so the hero
+             does not collapse when one of them is selected. */
+          noMarketplace.map((agent) => (
+            <div class="agent-block" data-agent-id={agent.id}>
+              <p class="hero__install-label">Install into {agent.label}</p>
+              <p class="hero__install-note">
+                {agent.label} has no plugin marketplace — open any skill or command below for a
+                one-line install.
+              </p>
+            </div>
+          ))
+        }
       </div>
 
       <p class="hero__meta">
