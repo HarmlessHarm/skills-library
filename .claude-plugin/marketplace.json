@@ -8,7 +8,7 @@
     {
       "name": "skills-library",
       "source": "./",
-      "description": "Browse, search and install reusable skills and commands for your coding agent.",
+      "description": "Browse, search and install reusable skills for your coding agent.",
       "version": "1.0.0"
     }
   ]

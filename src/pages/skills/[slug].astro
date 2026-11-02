@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import ItemDetail from '../../components/ItemDetail.astro';
+import SkillDetail from '../../components/SkillDetail.astro';
 import { getSkills } from '../../lib/items';
 
 export async function getStaticPaths() {
@@ -12,5 +12,5 @@ const { item } = Astro.props;
 ---
 
 <Base title={item.title} description={item.description}>
-  <ItemDetail item={item} />
+  <SkillDetail item={item} />
 </Base>

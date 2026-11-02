@@ -1,13 +1,13 @@
 ---
-import type { Item } from '../lib/items';
+import type { Skill } from '../lib/items';
 import { withBase } from '../lib/url';
 
 interface Props {
-  item: Item;
+  item: Skill;
 }
 
 const { item } = Astro.props;
-const href = withBase(`/${item.type === 'skill' ? 'skills' : 'commands'}/${item.slug}/`);
+const href = withBase(`/skills/${item.slug}/`);
 
 // The filter script reads these attributes; keeping the haystack pre-lowercased
 // keeps filtering cheap on every keystroke.
@@ -26,7 +26,6 @@ const haystack = [item.name, item.title, item.description, ...item.tags.map((t) 
   >
     <div class="card__head">
       <h2 class="card__title">{item.title}</h2>
-      <span class="badge badge--type">{item.type}</span>
     </div>
 
     <p class="card__desc">{item.description}</p>

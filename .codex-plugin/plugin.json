@@ -1,7 +1,7 @@
 {
   "name": "skills-library",
   "version": "1.0.0",
-  "description": "Browse, search and install reusable skills and commands for your coding agent.",
+  "description": "Browse, search and install reusable skills for your coding agent.",
   "author": {
     "name": "HarmlessHarm",
     "url": "https://github.com/HarmlessHarm"
@@ -12,6 +12,6 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Skills Library",
-    "shortDescription": "A personal library of agent skills and commands."
+    "shortDescription": "A personal library of agent skills."
   }
 }

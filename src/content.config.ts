@@ -2,7 +2,7 @@ import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
 /**
- * Fields shared by skills and commands. `name` and `description` are the two
+ * Skill frontmatter. `name` and `description` are the two
  * the Agent Skills spec requires; everything else drives this site only, and is
  * safe to omit.
  *
@@ -29,16 +29,4 @@ const skills = defineCollection({
   schema: base,
 });
 
-const commands = defineCollection({
-  loader: glob({
-    pattern: 'commands/*.md',
-    base: '.',
-    generateId: ({ entry }) => entry.split('/').pop().replace(/\.md$/, ''),
-  }),
-  schema: base.extend({
-    'argument-hint': z.string().optional(),
-    model: z.string().optional(),
-  }),
-});
-
-export const collections = { skills, commands };
+export const collections = { skills };

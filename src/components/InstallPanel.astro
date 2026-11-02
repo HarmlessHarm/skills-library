@@ -1,28 +1,27 @@
 ---
-import { installSnippets, downloadUrl, sourceUrl, type ItemType } from '../lib/install';
+import { skillSnippets, downloadUrl, sourceUrl } from '../lib/install';
 import Terminal from './Terminal.astro';
 
 interface Props {
-  type: ItemType;
   name: string;
 }
 
-const { type, name } = Astro.props;
-const snippets = installSnippets(type, name, Astro.site);
-const download = downloadUrl(type, name, undefined); // site-relative, for the button
-const source = sourceUrl(type, name);
-const fileName = type === 'skill' ? `${name}.skill` : `${name}.md`;
+const { name } = Astro.props;
+const snippets = skillSnippets(name);
 ---
 
 <section class="panel">
   <h2>Install</h2>
 
   {
-    snippets.map(({ agent, script, destination }) => (
+    snippets.map(({ agent, script }) => (
       <div class="agent-block" data-agent-id={agent.id}>
         <Terminal script={script} />
         <p class="panel__note">
-          <span>Installs to <code>{destination}</code></span>
+          <span>
+            Installs into the current project. Add <code>-g</code> to install it for all your
+            projects.
+          </span>
           {agent.docs && (
             <a href={agent.docs} rel="noopener">
               {agent.label} docs →
@@ -36,13 +35,10 @@ const fileName = type === 'skill' ? `${name}.skill` : `${name}.md`;
 
 <section class="panel">
   <h2>Download</h2>
-  <a class="button" href={download} download>Download {fileName}</a>
-  <a class="button button--secondary" href={source} rel="noopener">View source on GitHub</a>
+  <a class="button" href={downloadUrl(name)} download>Download {name}.skill</a>
+  <a class="button button--secondary" href={sourceUrl(name)} rel="noopener">View source on GitHub</a>
   <p class="panel__note">
-    {
-      type === 'skill'
-        ? 'A zip archive of the skill folder — SKILL.md plus any supporting files.'
-        : 'The command file itself, ready to drop into your agent’s commands folder.'
-    }
+    A zip archive of the skill folder — SKILL.md plus any supporting files — for installing by
+    hand.
   </p>
 </section>

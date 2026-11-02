@@ -3,9 +3,7 @@
  * Prepares everything the site cannot generate from markdown alone:
  *
  *   1. public/downloads/<name>.skill   — a zip of each skills/<name>/ folder
- *   2. public/downloads/<name>.md      — a copy of each command, so downloads
- *                                        are served by the site itself
- *   3. .claude-plugin/{marketplace,plugin}.json,
+ *   2. .claude-plugin/{marketplace,plugin}.json,
  *      .codex-plugin/plugin.json and .agents/plugins/marketplace.json
  *      — all regenerated from config.yaml
  *
@@ -22,7 +20,6 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const config = parse(readFileSync(join(root, 'config.yaml'), 'utf8'));
 
 const SKILLS_DIR = join(root, 'skills');
-const COMMANDS_DIR = join(root, 'commands');
 const OUT_DIR = join(root, 'public', 'downloads');
 const CLAUDE_DIR = join(root, '.claude-plugin');
 const CODEX_DIR = join(root, '.codex-plugin');
@@ -37,9 +34,6 @@ const exists = (p) => {
 
 const dirs = (p) =>
   exists(p) ? readdirSync(p, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name) : [];
-
-const files = (p, ext) =>
-  exists(p) ? readdirSync(p, { withFileTypes: true }).filter((e) => e.isFile() && e.name.endsWith(ext)).map((e) => e.name) : [];
 
 /** Every file under `dir`, recursively, as paths relative to `dir`. */
 function walk(dir, base = dir) {
@@ -81,18 +75,12 @@ for (const name of dirs(SKILLS_DIR)) {
   skillCount++;
 }
 
-// 2. Command copies ---------------------------------------------------------
-let commandCount = 0;
-for (const file of files(COMMANDS_DIR, '.md')) {
-  writeFileSync(join(OUT_DIR, file), readFileSync(join(COMMANDS_DIR, file)));
-  commandCount++;
-}
-
-// 3. Plugin manifests -------------------------------------------------------
+// 2. Plugin manifests -------------------------------------------------------
 const repo = resolveRepo(config.site?.repo);
 
 // Both ecosystems require a kebab-case identifier, and a repository name is
-// not guaranteed to be one.
+// not guaranteed to be one. src/lib/install.ts derives the same name for the
+// plugin install snippets — keep the two in step.
 const toKebab = (value) =>
   value
     .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
@@ -135,7 +123,7 @@ write(CLAUDE_DIR, 'marketplace.json', {
 });
 
 // Codex — the plugin manifest. `skills` is a path relative to the plugin root,
-// which is the repository root here. commands/ is picked up by convention.
+// which is the repository root here.
 write(CODEX_DIR, 'plugin.json', {
   name: pluginName,
   version,
@@ -168,5 +156,5 @@ write(CODEX_MARKET_DIR, 'marketplace.json', {
 });
 
 console.log(
-  `[assets] ${skillCount} skill bundle(s), ${commandCount} command file(s), Claude + Codex plugin manifests for "${pluginName}"`,
+  `[assets] ${skillCount} skill bundle(s), Claude + Codex plugin manifests for "${pluginName}"`,
 );
