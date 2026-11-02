@@ -2,7 +2,7 @@
 # Skills Library configuration
 #
 # This is the only file you need to edit to make the site your own.
-# Everything here feeds the site, the install snippets and the plugin manifest.
+# Everything here feeds the site and the install snippets.
 #
 # Every value below is optional. Left empty, the repository details are worked
 # out from GITHUB_REPOSITORY in CI, or from your `origin` remote locally — so a
@@ -48,11 +48,6 @@ theme:
 # Every skill installs with the `skills` CLI (https://skills.sh):
 #   npx skills add <owner>/<repo> --skill <name> -a <skillsAgent>
 # `skillsAgent` is that CLI's identifier for the agent (see `npx skills --help`).
-#
-# `plugin` is an optional extra: a command that installs the whole library as
-# a plugin. Leave it out and the hero only shows the `npx skills` install.
-#
-# Placeholders in `plugin`: {owner} {repo} {slug} {branch} {plugin}
 # ---------------------------------------------------------------------------
 defaultAgent: copilot
 
@@ -65,13 +60,9 @@ agents:
   - id: codex
     label: Codex
     skillsAgent: codex
-    plugin: codex plugin marketplace add {slug}
     docs: https://developers.openai.com/codex/skills
 
   - id: claude
     label: Claude Code
     skillsAgent: claude-code
-    plugin: |-
-      /plugin marketplace add {slug}
-      /plugin install {plugin}@{plugin}
     docs: https://code.claude.com/docs/en/skills

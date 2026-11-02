@@ -1,13 +1,23 @@
 ---
-import type { Skill } from '../lib/items';
-import { withBase } from '../lib/url';
+import type { Item } from '../lib/items';
 
 interface Props {
-  item: Skill;
+  item: Item;
 }
 
 const { item } = Astro.props;
-const href = withBase(`/skills/${item.slug}/`);
+const external = item.origin === 'external' ? item : undefined;
+
+// The filter script reads these attributes; keeping the haystack pre-lowercased
+// keeps filtering cheap on every keystroke.
+const haystack = [
+  item.title,
+  item.description,
+  ...item.tags.map((t) => t.id),
+  ...(external ? [external.kindLabel, external.sourceLabel] : [item.name]),
+]
+  .join(' ')
+  .toLowerCase();
 
 // Long descriptions would stretch every card in the row, so cut at the last
 // whole word that fits; the full text is on the detail page.
@@ -16,25 +26,23 @@ const desc =
   item.description.length <= MAX_DESC
     ? item.description
     : item.description.slice(0, MAX_DESC + 1).replace(/\s+\S*$/, '').replace(/[\s,.;:–—-]+$/, '') + '…';
-
-// The filter script reads these attributes; keeping the haystack pre-lowercased
-// keeps filtering cheap on every keystroke.
-const haystack = [item.name, item.title, item.description, ...item.tags.map((t) => t.id)]
-  .join(' ')
-  .toLowerCase();
 ---
 
 <li>
   <a
     class="card"
-    href={href}
+    href={item.href}
     data-item
+    data-origin={item.origin}
     data-tags={item.tags.map((t) => t.id).join(',')}
     data-search={haystack}
   >
     <div class="card__head">
       <h2 class="card__title">{item.title}</h2>
+      {external && <span class="card__origin">External</span>}
     </div>
+
+    {external && <p class="card__from">{external.kindLabel} from {external.sourceLabel}</p>}
 
     <p class="card__desc">{desc}</p>
 

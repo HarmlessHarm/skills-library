@@ -8,9 +8,6 @@ export interface AgentConfig {
   label: string;
   /** The agent's identifier in the `skills` CLI, passed as `-a`. */
   skillsAgent: string;
-  /** Command that installs the whole library as a plugin. Omitted for agents
-      that should only be offered the `npx skills` install. */
-  plugin?: string;
   docs?: string;
 }
 

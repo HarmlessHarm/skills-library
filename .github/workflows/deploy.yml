@@ -6,8 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  # `contents: write` so the build can commit regenerated plugin manifests.
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -26,33 +25,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-
-      # The Claude and Codex plugin manifests are generated from config.yaml but
-      # have to be committed, because both agents read them from the repository
-      # rather than from the built site. Committing them back here is what makes
-      # a fork of this template correctly attributed to its own owner on the
-      # first push, without anyone editing a file.
-      - name: Sync generated plugin manifests
-        env:
-          MANIFESTS: .claude-plugin .codex-plugin .agents
-        run: |
-          # `git status` rather than `git diff` so untracked files count too: a
-          # fork created before one of these directories existed still gets it.
-          if git status --porcelain -- $MANIFESTS | grep -q .; then
-            git status --short -- $MANIFESTS
-          else
-            echo "Plugin manifests are already up to date."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add $MANIFESTS
-          git commit -m "Sync plugin manifests with config.yaml"
-
-          # A protected branch is a fair reason for this to fail; the site still
-          # deploys, so warn rather than fail the run.
-          git push || echo "::warning::Could not push the regenerated plugin manifests. Run 'npm run build' locally and commit $MANIFESTS."
 
       - uses: actions/upload-pages-artifact@v3
         with:
