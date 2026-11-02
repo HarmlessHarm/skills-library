@@ -3,33 +3,68 @@ import type { Tag } from '../lib/items';
 
 interface Props {
   tags: (Tag & { count: number })[];
+  kinds: { id: string; label: string; count: number }[];
   /** How many items live in this library and how many are external picks. */
   origins: { library: number; external: number };
 }
 
-const { tags, origins } = Astro.props;
+const { tags, kinds, origins } = Astro.props;
+const total = origins.library + origins.external;
 
 // Only worth offering when there is something on both sides.
 const originFilters =
   origins.library > 0 && origins.external > 0
     ? [
-        { id: '', label: 'All', count: origins.library + origins.external },
-        { id: 'library', label: 'Ours', count: origins.library },
-        { id: 'external', label: 'External', count: origins.external },
+        { id: '', label: 'All' },
+        { id: 'library', label: 'In this library' },
+        { id: 'external', label: 'External' },
       ]
     : [];
+
+const summary = [
+  `${total} item${total === 1 ? '' : 's'}`,
+  originFilters.length > 0 && `${origins.library} in this repository, ${origins.external} linked from other projects`,
+]
+  .filter(Boolean)
+  .join(' · ');
 ---
 
-<div class="wrap filters">
-  <div class="filters__search">
-    <label class="visually-hidden" for="search">Search skills</label>
-    <input id="search" type="search" placeholder="Search by name or tag…" autocomplete="off" />
-    <kbd class="filters__shortcut">/</kbd>
+<div class="library__head">
+  <div>
+    <h2 id="library-title" class="library__title">The library</h2>
+    <p class="library__summary">{summary}</p>
   </div>
+  {
+    originFilters.length > 0 && (
+      <div class="segmented" role="group" aria-label="Source">
+        {originFilters.map((o) => (
+          <button type="button" data-origin-filter={o.id} aria-pressed={String(o.id === '')}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    )
+  }
+</div>
 
+<div class="filters" role="group" aria-label="Filter by type and tag">
+  {
+    kinds.length > 1 && (
+      <div class="chips">
+        <span class="chips__label">Type</span>
+        {kinds.map((kind) => (
+          <button class="chip" type="button" data-kind-filter={kind.id} aria-pressed="false">
+            {kind.label}
+            <span class="chip__count">{kind.count}</span>
+          </button>
+        ))}
+      </div>
+    )
+  }
   {
     tags.length > 0 && (
-      <div class="filters__tags chips" role="group" aria-label="Filter by tag">
+      <div class="chips">
+        <span class="chips__label">Tags</span>
         {tags.map((tag) => (
           <button class="chip" type="button" data-tag-filter={tag.id} aria-pressed="false">
             {tag.label}
@@ -39,20 +74,7 @@ const originFilters =
       </div>
     )
   }
-
   <p class="filters__status">
-    {
-      originFilters.length > 0 && (
-        <span class="chips" role="group" aria-label="Filter by origin">
-          {originFilters.map((o) => (
-            <button class="chip" type="button" data-origin-filter={o.id} aria-pressed={String(o.id === '')}>
-              {o.label}
-              <span class="chip__count">{o.count}</span>
-            </button>
-          ))}
-        </span>
-      )
-    }
     <span id="result-count" aria-live="polite"></span>
     <button class="filters__reset" type="button" id="reset-filters" hidden>Clear filters</button>
   </p>

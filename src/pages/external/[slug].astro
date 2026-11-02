@@ -11,6 +11,6 @@ export async function getStaticPaths() {
 const { item } = Astro.props;
 ---
 
-<Base title={item.title} description={item.description}>
+<Base title={item.title} description={item.description} section="skills">
   <ExternalDetail item={item} />
 </Base>

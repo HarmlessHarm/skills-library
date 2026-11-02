@@ -1,78 +1,86 @@
 ---
 import Base from '../layouts/Base.astro';
 import Filters from '../components/Filters.astro';
+import Icon from '../components/Icon.astro';
+import LatestPost from '../components/LatestPost.astro';
 import SkillCard from '../components/SkillCard.astro';
-import Terminal from '../components/Terminal.astro';
-import { config, maintainer } from '../lib/config';
-import { librarySnippets } from '../lib/install';
-import { getItems, usedTags } from '../lib/items';
+import { config, repo } from '../lib/config';
+import { getItems, usedKinds, usedTags } from '../lib/items';
+import { getPosts } from '../lib/posts';
 
 const items = await getItems();
+const posts = await getPosts();
 const tags = usedTags(items);
+const kinds = usedKinds(items);
 const origins = {
   library: items.filter((i) => i.origin === 'library').length,
   external: items.filter((i) => i.origin === 'external').length,
 };
 
-const library = librarySnippets();
+// Newest post per item, for the "Read: …" link on its card. Posts are sorted
+// newest first, so the first one seen for an item wins.
+const postFor = new Map<string, (typeof posts)[number]>();
+for (const post of posts) {
+  for (const item of post.items) if (!postFor.has(item.slug)) postFor.set(item.slug, post);
+}
 
-const counts = [
-  `${origins.library} skill${origins.library === 1 ? '' : 's'}`,
-  origins.external > 0 && `${origins.external} external pick${origins.external === 1 ? '' : 's'}`,
-]
-  .filter(Boolean)
-  .join(' · ');
+const latest = posts[0];
+const docs = (anchor: string) => `${repo.url}#${anchor}`;
 ---
 
-<Base>
+<Base section="skills">
   <section class="hero">
-    <div class="wrap">
-      <h1>{config.site.title}</h1>
-      <p class="hero__tagline">{config.site.tagline}</p>
+    <div class="wrap hero__inner">
+      <div class="hero__intro">
+        <div class="hero__text">
+          <h1>{config.site.tagline}</h1>
+          <p class="hero__lead">{config.site.description}</p>
+        </div>
 
-      <div class="hero__install">
-        {
-          library.map(({ agent, script }) => (
-            <div class="agent-block" data-agent-id={agent.id}>
-              <p class="hero__install-label">Add every skill in this library to {agent.label}</p>
-              <Terminal script={script} />
-              <p class="hero__install-note">
-                Installs into the current project — add <code>-g</code> for all your projects. Open
-                any skill below to install just that one.
-              </p>
-            </div>
-          ))
-        }
+        <div class="search" role="search">
+          <label class="search__label" for="search">Search the library</label>
+          <div class="search__field">
+            <Icon name="search" size={20} />
+            <input id="search" type="search" placeholder="Name, description or tag" autocomplete="off" />
+            <kbd class="search__shortcut" aria-hidden="true">/</kbd>
+          </div>
+        </div>
       </div>
 
-      <p class="hero__meta">
-        <span>{counts}</span>
-        {
-          maintainer.name && (
-            <span>
-              {' · maintained by '}
-              {maintainer.url ? (
-                <a href={maintainer.url} rel="noopener">
-                  {maintainer.name}
-                </a>
-              ) : (
-                maintainer.name
-              )}
-            </span>
-          )
-        }
-      </p>
+      {latest && <LatestPost post={latest} />}
     </div>
   </section>
 
-  <Filters tags={tags} origins={origins} />
+  <section class="wrap library" aria-labelledby="library-title">
+    <Filters tags={tags} kinds={kinds} origins={origins} />
 
-  <div class="wrap">
     <ul class="grid" id="grid">
-      {items.map((item) => <SkillCard item={item} />)}
+      {items.map((item) => <SkillCard item={item} post={postFor.get(item.slug)} />)}
     </ul>
-    <p class="empty" id="empty" hidden>No skills match that search.</p>
-  </div>
+    <p class="empty" id="empty" hidden>Nothing matches that search.</p>
+  </section>
+
+  <section id="contribute" class="wrap contribute" aria-labelledby="contribute-title">
+    <div class="contribute__box">
+      <div class="contribute__col">
+        <h2 id="contribute-title">Contribute</h2>
+        <p>Everything here is a file in the repository. Open a pull request and the site rebuilds on merge.</p>
+      </div>
+      <div class="contribute__col">
+        <h3>Share a skill</h3>
+        <p>
+          Add <code>skills/&lt;name&gt;/SKILL.md</code>, or describe something from another project in
+          <code>external/&lt;name&gt;.md</code>.
+        </p>
+        <a href={docs('adding-a-skill')}>How to add a skill</a>
+      </div>
+      <div class="contribute__col">
+        <h3>Share your experience</h3>
+        <p>Write a short post in <code>posts/</code> about a skill or framework you used: what worked, what didn't.</p>
+        <a href={docs('writing-a-post')}>How to write a post</a>
+      </div>
+    </div>
+  </section>
 </Base>
 
 <script>
@@ -85,22 +93,17 @@ const counts = [
   const reset = document.querySelector<HTMLButtonElement>('#reset-filters');
   const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-item]'));
 
-  const state = { q: '', tag: '', origin: '' };
+  const state = { q: '', tag: '', kind: '', origin: '' };
 
-  function setPressed(value: string) {
-    for (const chip of document.querySelectorAll<HTMLElement>('[data-tag-filter]')) {
-      chip.setAttribute('aria-pressed', String(chip.dataset.tagFilter === value));
-    }
-  }
-
-  function setOriginPressed(value: string) {
-    for (const chip of document.querySelectorAll<HTMLElement>('[data-origin-filter]')) {
-      chip.setAttribute('aria-pressed', String(chip.dataset.originFilter === value));
+  function press(attr: string, value: string) {
+    for (const button of document.querySelectorAll<HTMLElement>(`[data-${attr}-filter]`)) {
+      button.setAttribute('aria-pressed', String(button.getAttribute(`data-${attr}-filter`) === value));
     }
   }
 
   function matches(card: HTMLElement) {
     if (state.origin && card.dataset.origin !== state.origin) return false;
+    if (state.kind && card.dataset.kind !== state.kind) return false;
     if (state.tag && !(card.dataset.tags ?? '').split(',').includes(state.tag)) return false;
     if (state.q && !(card.dataset.search ?? '').includes(state.q)) return false;
     return true;
@@ -119,13 +122,13 @@ const counts = [
     grid!.hidden = visible === 0;
     count!.textContent = `${visible} of ${cards.length} shown`;
 
-    const filtered = Boolean(state.q) || Boolean(state.tag) || Boolean(state.origin);
-    reset!.hidden = !filtered;
+    reset!.hidden = !(state.q || state.tag || state.kind || state.origin);
 
     if (pushUrl) {
       const params = new URLSearchParams();
       if (state.q) params.set('q', state.q);
       if (state.tag) params.set('tag', state.tag);
+      if (state.kind) params.set('type', state.kind);
       if (state.origin) params.set('from', state.origin);
       const query = params.toString();
       history.replaceState(null, '', query ? `?${query}` : location.pathname);
@@ -136,10 +139,12 @@ const counts = [
   const params = new URLSearchParams(location.search);
   state.q = (params.get('q') ?? '').toLowerCase();
   state.tag = (params.get('tag') ?? '').toLowerCase();
+  state.kind = (params.get('type') ?? '').toLowerCase();
   state.origin = ['library', 'external'].includes(params.get('from') ?? '') ? params.get('from')! : '';
   if (search) search.value = params.get('q') ?? '';
-  setPressed(state.tag);
-  setOriginPressed(state.origin);
+  press('tag', state.tag);
+  press('kind', state.kind);
+  press('origin', state.origin);
 
   let timer: ReturnType<typeof setTimeout>;
   search?.addEventListener('input', () => {
@@ -151,35 +156,44 @@ const counts = [
   });
 
   document.addEventListener('click', (event) => {
-    const origin = (event.target as HTMLElement)?.closest<HTMLElement>('[data-origin-filter]');
+    const target = event.target as HTMLElement | null;
+
+    const origin = target?.closest<HTMLElement>('[data-origin-filter]');
     if (origin) {
       state.origin = origin.dataset.originFilter ?? '';
-      setOriginPressed(state.origin);
+      press('origin', state.origin);
       apply();
       return;
     }
 
-    const chip = (event.target as HTMLElement)?.closest<HTMLElement>('[data-tag-filter]');
-    if (!chip) return;
+    // Type and tag chips toggle, so clicking the active one clears it.
+    const kind = target?.closest<HTMLElement>('[data-kind-filter]');
+    if (kind) {
+      state.kind = state.kind === kind.dataset.kindFilter ? '' : (kind.dataset.kindFilter ?? '');
+      press('kind', state.kind);
+      apply();
+      return;
+    }
 
-    // Tag chips toggle, so clicking the active one clears it.
+    const chip = target?.closest<HTMLElement>('[data-tag-filter]');
+    if (!chip) return;
     state.tag = state.tag === chip.dataset.tagFilter ? '' : (chip.dataset.tagFilter ?? '');
-    setPressed(state.tag);
+    press('tag', state.tag);
     apply();
   });
 
   reset?.addEventListener('click', () => {
-    state.q = '';
-    state.tag = '';
-    state.origin = '';
+    Object.assign(state, { q: '', tag: '', kind: '', origin: '' });
     if (search) search.value = '';
-    setPressed('');
-    setOriginPressed('');
+    press('tag', '');
+    press('kind', '');
+    press('origin', '');
     apply();
   });
 
   document.addEventListener('keydown', (event) => {
-    const typingElsewhere = document.activeElement instanceof HTMLInputElement;
+    const typingElsewhere =
+      document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLSelectElement;
     if (event.key === '/' && !typingElsewhere) {
       event.preventDefault();
       search?.focus();

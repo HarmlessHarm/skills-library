@@ -1,11 +1,17 @@
 ---
 import type { Item } from '../lib/items';
+import type { Post } from '../lib/posts';
+import { skillSnippets } from '../lib/install';
+import CopyButton from './CopyButton.astro';
+import Icon from './Icon.astro';
 
 interface Props {
   item: Item;
+  /** The newest post about this item, if any: shown as a link at the bottom. */
+  post?: Post;
 }
 
-const { item } = Astro.props;
+const { item, post } = Astro.props;
 const external = item.origin === 'external' ? item : undefined;
 
 // The filter script reads these attributes; keeping the haystack pre-lowercased
@@ -13,8 +19,9 @@ const external = item.origin === 'external' ? item : undefined;
 const haystack = [
   item.title,
   item.description,
+  item.kindLabel,
   ...item.tags.map((t) => t.id),
-  ...(external ? [external.kindLabel, external.sourceLabel] : [item.name]),
+  ...(external ? [external.sourceLabel] : [item.name]),
 ]
   .join(' ')
   .toLowerCase();
@@ -26,29 +33,79 @@ const desc =
   item.description.length <= MAX_DESC
     ? item.description
     : item.description.slice(0, MAX_DESC + 1).replace(/\s+\S*$/, '').replace(/[\s,.;:–—-]+$/, '') + '…';
+
+const snippets = external ? [] : skillSnippets(item.slug);
 ---
 
 <li>
-  <a
+  <article
     class="card"
-    href={item.href}
     data-item
     data-origin={item.origin}
+    data-kind={item.kind}
     data-tags={item.tags.map((t) => t.id).join(',')}
     data-search={haystack}
   >
     <div class="card__head">
-      <h2 class="card__title">{item.title}</h2>
-      {external && <span class="card__origin">External</span>}
+      {/* The title link is stretched over the whole card (see .card__link),
+          so the card is one big target while the copy button and post link
+          inside it stay separately clickable. */}
+      <h2 class="card__title"><a class="card__link" href={item.href}>{item.title}</a></h2>
+      <div class="card__badges">
+        <span class="badge">{item.kindLabel}</span>
+        {
+          external ? (
+            <span class="badge badge--outline">
+              <Icon name="external" size={12} />
+              External · {external.sourceLabel}
+            </span>
+          ) : (
+            <span class="badge badge--accent">
+              <Icon name="home" size={12} />
+              In this library
+            </span>
+          )
+        }
+      </div>
     </div>
-
-    {external && <p class="card__from">{external.kindLabel} from {external.sourceLabel}</p>}
 
     <p class="card__desc">{desc}</p>
 
-    <div class="card__meta">
-      {item.tags.slice(0, 4).map((tag) => <span class="badge">{tag.label}</span>)}
-      {item.tags.length > 4 && <span class="badge">+{item.tags.length - 4}</span>}
-    </div>
-  </a>
+    {
+      item.tags.length > 0 && (
+        <p class="card__tags">
+          {item.tags.slice(0, 4).map((tag) => <span>#{tag.id}</span>)}
+          {item.tags.length > 4 && <span>+{item.tags.length - 4}</span>}
+        </p>
+      )
+    }
+
+    {
+      snippets.map(({ agent, script }) => (
+        <div class="agent-block card__install" data-agent-id={agent.id}>
+          <code>{script}</code>
+          <CopyButton value={script} label="Copy" />
+        </div>
+      ))
+    }
+
+    {
+      external && (
+        <a class="button button--soft card__action" href={external.source} rel="noopener">
+          View project
+          <Icon name="external" size={14} />
+          <span class="visually-hidden">(opens {external.sourceLabel})</span>
+        </a>
+      )
+    }
+
+    {
+      post && (
+        <a class="card__post" href={post.href}>
+          <Icon name="book" size={16} />
+          <span>Read: {post.title}</span>
+        </a>
+      )
+    }
+  </article>
 </li>

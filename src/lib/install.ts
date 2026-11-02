@@ -18,14 +18,6 @@ export function sourceUrl(name: string): string {
   return `https://github.com/${repo.slug}/tree/${repo.branch}/skills/${name}`;
 }
 
-/** `npx skills add` for the whole library, one per agent. */
-export function librarySnippets(): InstallSnippet[] {
-  return config.agents.map((agent) => ({
-    agent,
-    script: `npx skills add ${repo.slug} -a ${agent.skillsAgent}`,
-  }));
-}
-
 /** `npx skills add` for a single skill, one per agent. */
 export function skillSnippets(name: string): InstallSnippet[] {
   return config.agents.map((agent) => ({

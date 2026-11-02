@@ -1,0 +1,50 @@
+---
+import type { Post } from '../lib/posts';
+import { withBase } from '../lib/url';
+import Icon from './Icon.astro';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+---
+
+<article class="latest card-static">
+  <div class="latest__top">
+    <span class="new-label"><span class="new-dot" aria-hidden="true"></span>Latest from the blog</span>
+    <span class="latest__date">{post.dateLabel} · {post.readingMinutes} min read</span>
+  </div>
+
+  <div class="latest__body">
+    <h2 class="latest__title"><a href={post.href}>{post.title}</a></h2>
+    <p class="latest__desc">{post.description}</p>
+  </div>
+
+  <p class="byline">
+    <span class="avatar" aria-hidden="true">{post.initials}</span>
+    <span>{post.author}</span>
+    {
+      post.items.length > 0 && (
+        <>
+          <span aria-hidden="true">·</span>
+          <span>
+            About{' '}
+            {post.items.map((item, i) => (
+              <>
+                {i > 0 && ', '}
+                <a href={item.href}>{item.title}</a>
+              </>
+            ))}
+          </span>
+        </>
+      )
+    }
+  </p>
+
+  <div class="latest__actions">
+    <a class="button button--inline" href={post.href}>Read post <Icon name="arrow-right" /></a>
+    <a class="latest__all" href={withBase('/blog/')}>All posts</a>
+    <a class="latest__write" href={withBase('/#contribute')}>Write a post</a>
+  </div>
+</article>

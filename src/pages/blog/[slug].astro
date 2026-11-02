@@ -1,0 +1,114 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import CopyButton from '../../components/CopyButton.astro';
+import { skillSnippets } from '../../lib/install';
+import { getPosts, type Post } from '../../lib/posts';
+import { withBase } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.slug }, props: { post, posts } }));
+}
+
+interface Props {
+  post: Post;
+  posts: Post[];
+}
+
+const { post, posts } = Astro.props;
+const { Content } = await render(post.entry);
+const more = posts.filter((p) => p.slug !== post.slug).slice(0, 3);
+---
+
+<Base title={post.title} description={post.description} section="blog">
+  <div class="wrap article-layout">
+    <article class="article">
+      <a class="back-link" href={withBase('/blog/')}><Icon name="arrow-left" /> All posts</a>
+
+      <header class="article__head">
+        {post.topic && <span class="badge">{post.topic}</span>}
+        <h1 class="article__title">{post.title}</h1>
+        <p class="article__lead">{post.description}</p>
+        <p class="byline byline--large">
+          <span class="avatar" aria-hidden="true">{post.initials}</span>
+          <span class="byline__name">{post.author}</span>
+          {
+            post.role && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{post.role}</span>
+              </>
+            )
+          }
+          <span aria-hidden="true">·</span>
+          <time datetime={post.date.toISOString().slice(0, 10)}>{post.dateLabel}</time>
+          <span aria-hidden="true">·</span>
+          <span>{post.readingMinutes} min read</span>
+        </p>
+      </header>
+
+      <div class="prose article__body">
+        <Content />
+      </div>
+    </article>
+
+    <aside class="article-layout__side">
+      {
+        post.items.length > 0 && (
+          <section class="panel panel--raised">
+            <h2>{post.items.length === 1 ? 'Skill' : 'Skills'} in this post</h2>
+            {post.items.map((item) => (
+              <div class="mini-item">
+                <a class="mini-item__title" href={item.href}>
+                  {item.title}
+                </a>
+                <span class="card__badges">
+                  <span class="badge">{item.kindLabel}</span>
+                  {item.origin === 'library' ? (
+                    <span class="badge badge--accent">In this library</span>
+                  ) : (
+                    <span class="badge badge--outline">External · {item.sourceLabel}</span>
+                  )}
+                </span>
+                <p class="mini-item__desc">{item.description}</p>
+                {item.origin === 'library' ? (
+                  skillSnippets(item.slug).map(({ agent, script }) => (
+                    <div class="agent-block card__install" data-agent-id={agent.id}>
+                      <code>{script}</code>
+                      <CopyButton value={script} label="Copy" />
+                    </div>
+                  ))
+                ) : (
+                  <a class="button button--soft" href={item.href}>
+                    How to get it
+                  </a>
+                )}
+              </div>
+            ))}
+          </section>
+        )
+      }
+
+      {
+        more.length > 0 && (
+          <section class="panel">
+            <h2>More posts</h2>
+            <ul class="more-posts">
+              {more.map((p) => (
+                <li>
+                  <a href={p.href}>{p.title}</a>
+                  <span>
+                    {p.dateLabel} · {p.readingMinutes} min
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <a href={withBase('/blog/')}>All posts</a>
+          </section>
+        )
+      }
+    </aside>
+  </div>
+</Base>

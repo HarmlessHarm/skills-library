@@ -22,6 +22,8 @@ interface BaseItem {
 /** A skill in this library, normalised into one shape for cards and pages. */
 export interface Skill extends BaseItem {
   origin: 'library';
+  kind: 'skill';
+  kindLabel: string;
   name: string;
   version: string;
   author: string;
@@ -49,12 +51,19 @@ export interface External extends BaseItem {
 
 export type Item = Skill | External;
 
-const kindLabels: Record<ExternalKind, string> = {
+export const kindLabels: Record<ExternalKind, string> = {
   skill: 'Skill',
   collection: 'Skill collection',
   plugin: 'Plugin',
   tool: 'Tool',
 };
+
+/** Every kind in use, in the order of `kindLabels`, with how many items have it. */
+export function usedKinds(items: Item[]): { id: ExternalKind; label: string; count: number }[] {
+  return (Object.keys(kindLabels) as ExternalKind[])
+    .map((id) => ({ id, label: kindLabels[id], count: items.filter((i) => i.kind === id).length }))
+    .filter((k) => k.count > 0);
+}
 
 function toTags(values: string[]): Tag[] {
   const seen = new Map<string, Tag>();
@@ -69,6 +78,8 @@ function normalise(entry: CollectionEntry<'skills'>): Skill {
   const data = entry.data;
   return {
     origin: 'library',
+    kind: 'skill',
+    kindLabel: kindLabels.skill,
     slug: entry.id,
     href: withBase(`/skills/${entry.id}/`),
     name: data.name,

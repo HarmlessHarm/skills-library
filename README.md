@@ -1,10 +1,13 @@
-# Skills Library
+# Skill Library
 
-A template for publishing your own library of agent skills as a GitHub Pages
-site — searchable, filterable, and installable into GitHub Copilot, Codex or
-Claude Code in one command with [`npx skills`](https://skills.sh).
+The Gemeente Amsterdam skill library: a GitHub Pages site for sharing agent skills, tools and
+plugins, and for sharing what we learned using them. Skills install into GitHub Copilot, Codex
+or Claude Code in one command with [`npx skills`](https://skills.sh); short blog posts from
+colleagues sit next to them.
 
-Fork it, edit one YAML file, drop your skills in, and push.
+It's styled with the Amsterdam Soft design system (Amsterdam blue, a little Amsterdam red,
+Figtree, soft corners). The styling is hard-coded for now; it may be split back out into a
+generic template later.
 
 ---
 
@@ -18,6 +21,8 @@ Fork it, edit one YAML file, drop your skills in, and push.
 - **Downloadable `.skill` bundles** — each skill folder zipped, supporting files included.
 - **External picks** — useful skills, plugins and tools found elsewhere, each with a short
   article on why it's worth a look and how to get it from its own source.
+- **A blog** — short posts about a skill, tool or framework someone used. The newest one is
+  featured on the home page, and posts and the skills they're about link to each other.
 - **Light and dark themes** — follows the viewer's system setting, with a header toggle that
   overrides it and is remembered.
 - **Automatic deploys** to GitHub Pages on every push to `main`.
@@ -125,9 +130,49 @@ colleague should know before trying it.
 | `tags`        | Shared with library skills, so filters cover both                    |
 
 External picks appear alongside library skills with an **External** label, and an
-*All / Ours / External* filter appears once both exist. They are never part of
+*All / In this library / External* switch appears once both exist. They are never part of
 `npx skills add <owner>/<repo>` for this library — installing one always happens from its
 own source.
+
+## Writing a post
+
+Posts are short write-ups: what you tried, what happened, what you'd tell a colleague. Copy
+[`posts/_template.md`](posts/_template.md) to `posts/<slug>.md`:
+
+```markdown
+---
+title: A week of letting the agent ask the questions
+description: One or two sentences, shown as the preview on the home page and the blog.
+date: 2026-11-02
+author: Your Name
+role: Developer, Your Team   # optional
+topic: Skills                # optional, used to filter the blog
+tags: [learning]
+skills: [mentor]             # what the post is about
+---
+
+The post itself, in Markdown.
+```
+
+| Field         | Purpose                                                                       |
+| ------------- | ----------------------------------------------------------------------------- |
+| `title`       | **Required.** The headline                                                    |
+| `description` | **Required.** Preview text on the home page, the blog and in search results   |
+| `date`        | **Required.** Publication date, `YYYY-MM-DD`. The newest post is featured      |
+| `author`      | **Required.** Shown in the byline; the initials go in the avatar               |
+| `role`        | Team or role, shown in the byline on the post                                 |
+| `topic`       | One short label. The blog shows topic filters once there are two or more      |
+| `skills`      | Slugs of library skills (`skills/<slug>/`) or external picks (`external/<slug>.md`) |
+| `draft`       | `true` keeps the post off the site                                            |
+
+Every slug under `skills:` is checked at build time. A typo fails the build with a message
+naming the post, rather than publishing a broken link. Each listed item gets a "Read: …" link
+on its card and a *Posts about this* panel on its page; the post shows the items with their
+install commands.
+
+To link to a page on the site from inside a post, write the path from the site root, like
+`[mentor](/skills/mentor/)`. The deploy base path is added for you. Reading time is worked
+out from the word count. Files whose name starts with `_` are never published.
 
 ## Configuration
 
@@ -137,7 +182,6 @@ Everything site-level lives in [`config.yaml`](config.yaml):
 | ---------- | ------------------------------------------------------------------------ |
 | `site`     | Title and tagline, plus optional author/repository/URL/base overrides     |
 | `defaults` | Version and license for items that omit them                              |
-| `theme`    | Accent colour, fonts and corner radius                                    |
 | `agents`   | The install targets in the header dropdown                                |
 
 Tag chips are built from the tags your skills actually use, so there is nothing
@@ -145,22 +189,30 @@ to configure.
 
 ## Theming
 
-Two levels, depending on how far you want to go:
+Every colour, space, radius, shadow and width is a custom property in
+[`src/styles/theme.css`](src/styles/theme.css), with values from the Amsterdam Soft design
+system. Components reference tokens only and never a literal colour, so changing a token
+changes the whole site. Layout lives in [`src/styles/global.css`](src/styles/global.css).
 
-- **Quick** — set `theme.accent`, `theme.accentDark`, `theme.font`, `theme.monoFont` and
-  `theme.radius` in `config.yaml`. They are injected as CSS variables and override the defaults.
-- **Full** — edit [`src/styles/theme.css`](src/styles/theme.css). Every colour, radius, shadow
-  and width on the site is a custom property defined there. Components reference tokens only
-  and never a literal colour, so changing a token changes the whole site.
+A few rules from the design system that the site follows:
 
-Layout lives in [`src/styles/global.css`](src/styles/global.css) if you want to go further.
+- **Amsterdam blue** (`--accent`) is the one active colour: links, the main button, selected
+  filters.
+- **Amsterdam red** (`--brand-red`) is a small accent only: the logo, the underline under the
+  current nav item and the dot on the newest post. Never text, buttons or errors.
+- **Figtree** is the only typeface. It's bundled with
+  [`@fontsource-variable/figtree`](https://fontsource.org/fonts/figtree), so the site makes no
+  requests to Google Fonts.
+
+The logo in [`src/components/Logo.astro`](src/components/Logo.astro) is drawn by hand. Swap
+in the official SVG before the site goes public.
 
 ### Light and dark
 
 Colours are written once, as `light-dark(light, dark)`:
 
 ```css
---bg: light-dark(#ffffff, #0e1014);
+--bg: light-dark(#f6f7f9, #14161b);
 ```
 
 Which half applies comes from the `color-scheme` property, so there is no duplicated dark
@@ -223,9 +275,10 @@ npm run preview  # serve dist/ with the correct base path
 config.yaml              Site configuration — the file you edit
 skills/<name>/SKILL.md   One folder per skill, plus any supporting files
 external/<name>.md       One article per external pick
+posts/<slug>.md          One file per blog post (posts/_template.md to start from)
 src/styles/theme.css     Design tokens
 src/lib/repo.mjs         Works out which repository this is, for links and attribution
-src/lib/                 Config loading, install snippets, skill normalisation
+src/lib/                 Config loading, install snippets, skill and post normalisation
 scripts/build-assets.mjs Bundles .skill files
 ```
 
@@ -234,4 +287,4 @@ filtering runs over pre-rendered cards in the DOM.
 
 ## License
 
-MIT. Replace this section with your own terms if you fork it.
+MIT.
