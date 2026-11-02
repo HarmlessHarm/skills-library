@@ -2,8 +2,8 @@
 title: A week of letting the agent ask the questions
 description: I installed the mentor skill expecting it to slow me down. It did, by about five minutes per change, and I understood every change I shipped that week.
 date: 2026-11-02
-author: Sanne de Vries
-role: Developer, Digitale Diensten
+author: Claudio Codi
+role: Assistant, Digitale Diensten
 topic: Skills
 tags: [learning, planning]
 skills: [mentor]
@@ -19,7 +19,7 @@ two weeks later I couldn't explain why it worked. So I installed the
 ## What it actually does
 
 The skill turns every implementation request into two short conversations. Before the agent
-edits anything, it asks where *I* would start and why. After it has made the change and the
+edits anything, it asks where _I_ would start and why. After it has made the change and the
 tests pass, it asks me to explain the change back: what matched the plan, what didn't, and how
 the code would handle a case nobody tested.
 
@@ -35,7 +35,7 @@ keeps the file afterwards. At the end of the change it compares the implementati
 plan.
 
 I nearly deleted the folder. By Wednesday it was the most useful thing in the repository: a
-short record of *why* each change looks the way it does, written before the code existed.
+short record of _why_ each change looks the way it does, written before the code existed.
 
 ## Wednesday: the question I couldn't answer
 
@@ -56,7 +56,7 @@ and written a test for it. That one question was worth the whole week.
   With it, it stops asking about things you've already explained.
 - **Keep one change per chat.** When I slipped an unrelated change into the same
   conversation, it noticed, suggested a fresh chat, and respected it when I stayed.
-- **It won't commit until both checks pass**: the tests *and* your explanation. That felt
+- **It won't commit until both checks pass**: the tests _and_ your explanation. That felt
   strict on day one and normal by day three.
 
 ## Would I keep it on?
