@@ -159,25 +159,29 @@ pre {
 /* Terminal / copy blocks -------------------------------------------------- */
 
 .terminal {
-  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
   background: var(--terminal-bg);
   color: var(--terminal-text);
   border-radius: var(--radius);
-  padding: 0.85rem 3rem 0.85rem 1rem;
-  overflow-x: auto;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
 }
 
+/* Only the command scrolls; the copy button stays put beside it. */
 .terminal pre {
+  flex: 1;
+  min-width: 0;
   margin: 0;
+  padding-block: 0.35rem;
+  overflow-x: auto;
   font-size: 0.85rem;
   line-height: 1.7;
   white-space: pre;
 }
 
 .copy-button {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  flex: none;
   font: inherit;
   font-size: 0.75rem;
   color: var(--terminal-text);
