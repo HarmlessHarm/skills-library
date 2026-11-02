@@ -34,7 +34,7 @@ export function remarkRepoLinks() {
           node.type === 'image'
             ? `https://raw.githubusercontent.com/${repo}/${branch}`
             : `https://github.com/${repo}/blob/${branch}`;
-        node.url = `${host}/${dir}/${node.url}`.replace(/([^:])\/{2,}/g, '$1/');
+        node.url = new URL(node.url, `${host}/${dir}/`).href;
       }
       node.children?.forEach(visit);
     };
