@@ -7,6 +7,12 @@
   box-sizing: border-box;
 }
 
+/* The filter script hides cards, the grid and the empty state with `hidden`.
+   Any `display` rule (like `.grid > li`) would otherwise override it. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   background: var(--bg);
