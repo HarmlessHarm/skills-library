@@ -9,6 +9,14 @@ interface Props {
 const { item } = Astro.props;
 const href = withBase(`/skills/${item.slug}/`);
 
+// Long descriptions would stretch every card in the row, so cut at the last
+// whole word that fits; the full text is on the detail page.
+const MAX_DESC = 160;
+const desc =
+  item.description.length <= MAX_DESC
+    ? item.description
+    : item.description.slice(0, MAX_DESC + 1).replace(/\s+\S*$/, '').replace(/[\s,.;:–—-]+$/, '') + '…';
+
 // The filter script reads these attributes; keeping the haystack pre-lowercased
 // keeps filtering cheap on every keystroke.
 const haystack = [item.name, item.title, item.description, ...item.tags.map((t) => t.id)]
@@ -28,7 +36,7 @@ const haystack = [item.name, item.title, item.description, ...item.tags.map((t) 
       <h2 class="card__title">{item.title}</h2>
     </div>
 
-    <p class="card__desc">{item.description}</p>
+    <p class="card__desc">{desc}</p>
 
     <div class="card__meta">
       {item.tags.slice(0, 4).map((tag) => <span class="badge">{tag.label}</span>)}
