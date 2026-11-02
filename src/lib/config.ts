@@ -23,7 +23,6 @@ export interface SiteConfig {
     base?: string | null;
   };
   defaults: { version: string; license?: string };
-  theme: Record<string, string>;
   defaultAgent: string;
   agents: AgentConfig[];
 }
@@ -35,7 +34,6 @@ export const config: SiteConfig = {
   site: raw.site ?? {},
   agents: raw.agents ?? [],
   defaults: { version: '1.0.0', ...(raw.defaults ?? {}) },
-  theme: raw.theme ?? {},
 };
 
 if (config.agents.length === 0) {

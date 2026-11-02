@@ -10,9 +10,11 @@
 # ---------------------------------------------------------------------------
 
 site:
-  title: Skills Library
-  tagline: A personal library of agent skills.
-  description: Browse, search and install reusable skills for your coding agent.
+  title: Skill Library
+  # The big line at the top of the home page.
+  tagline: Skills, tools and plugins for your AI agent
+  # The line under it, and the description search engines show.
+  description: Written by colleagues or linked from projects we trust. Find one, copy one command, and read what others learned using it.
 
   # Displayed as the maintainer. Defaults to the repository owner.
   author:
@@ -32,14 +34,6 @@ site:
 defaults:
   version: "1.0.0"
   license: MIT
-
-# Quick theming. For full control edit src/styles/theme.css instead.
-theme:
-  accent: "#4f46e5"
-  accentDark: "#818cf8"
-  font: "system-ui, -apple-system, 'Segoe UI', sans-serif"
-  monoFont: "ui-monospace, SFMono-Regular, Menlo, monospace"
-  radius: "12px"
 
 # ---------------------------------------------------------------------------
 # Install targets. The dropdown in the header switches between these, and each

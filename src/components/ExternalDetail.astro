@@ -2,6 +2,7 @@
 import { render } from 'astro:content';
 import type { External } from '../lib/items';
 import { withBase } from '../lib/url';
+import PostsPanel from './PostsPanel.astro';
 import Terminal from './Terminal.astro';
 
 interface Props {
@@ -62,6 +63,7 @@ const { Content } = await render(item.entry);
           {item.contributor && <div><dt>Written by</dt><dd>{item.contributor}</dd></div>}
         </dl>
       </section>
+      <PostsPanel slug={item.slug} />
     </aside>
   </div>
 </div>

@@ -1,0 +1,28 @@
+---
+import { postsFor } from '../lib/posts';
+
+interface Props {
+  /** The library skill or external pick whose posts to list. */
+  slug: string;
+}
+
+const posts = await postsFor(Astro.props.slug);
+---
+
+{
+  posts.length > 0 && (
+    <section class="panel">
+      <h2>Posts about this</h2>
+      <ul class="more-posts">
+        {posts.map((post) => (
+          <li>
+            <a href={post.href}>{post.title}</a>
+            <span>
+              {post.author} · {post.dateLabel}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

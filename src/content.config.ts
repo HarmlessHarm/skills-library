@@ -53,4 +53,30 @@ const skills = defineCollection({
   schema: base,
 });
 
-export const collections = { skills, external };
+/**
+ * Blog posts: short write-ups by colleagues about a skill, tool or framework
+ * they used. Files starting with `_` (like `_template.md`) are skipped.
+ *
+ * `skills` lists the slugs of library skills or external picks the post is
+ * about; they link both ways, and an unknown slug fails the build.
+ */
+const posts = defineCollection({
+  loader: glob({
+    pattern: 'posts/[!_]*.md',
+    base: '.',
+    generateId: ({ entry }) => entry.split('/')[1].replace(/\.md$/, ''),
+  }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    date: z.coerce.date(),
+    author: z.string(),
+    role: z.string().optional(),
+    topic: z.string().optional(),
+    tags: z.array(z.string()).default([]),
+    skills: z.array(z.string()).default([]),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { skills, external, posts };

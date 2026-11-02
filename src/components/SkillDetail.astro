@@ -2,6 +2,7 @@
 import { render } from 'astro:content';
 import type { Skill } from '../lib/items';
 import { withBase } from '../lib/url';
+import PostsPanel from './PostsPanel.astro';
 import InstallPanel from './InstallPanel.astro';
 
 interface Props {
@@ -48,6 +49,7 @@ const { Content } = await render(item.entry);
           {item.homepage && <div><dt>Homepage</dt><dd><a href={item.homepage} rel="noopener">Link</a></dd></div>}
         </dl>
       </section>
+      <PostsPanel slug={item.slug} />
     </aside>
   </div>
 </div>

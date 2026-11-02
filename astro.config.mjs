@@ -12,12 +12,14 @@ const config = parse(readFileSync(fileURLToPath(new URL('./config.yaml', import.
 // edits. `site.url` / `site.base` in config.yaml override this.
 const repo = resolveRepo(config.site?.repo);
 
+const base = config.site?.base || (repo.name && !isUserSite(repo) ? `/${repo.name}` : '/');
+
 export default defineConfig({
   site: config.site?.url || (repo.owner ? `https://${repo.owner}.github.io` : undefined),
-  base: config.site?.base || (repo.name && !isUserSite(repo) ? `/${repo.name}` : '/'),
+  base,
   output: 'static',
   trailingSlash: 'ignore',
   markdown: {
-    processor: unified({ remarkPlugins: [remarkRepoLinks] }),
+    processor: unified({ remarkPlugins: [[remarkRepoLinks, { base }]] }),
   },
 });

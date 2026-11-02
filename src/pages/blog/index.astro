@@ -1,0 +1,169 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { repo } from '../../lib/config';
+import { getPosts, mostWrittenAbout } from '../../lib/posts';
+
+const posts = await getPosts();
+const [latest, ...rest] = posts;
+const popular = mostWrittenAbout(posts).slice(0, 5);
+const topics = [...new Set(posts.map((p) => p.topic).filter(Boolean))].sort() as string[];
+const guide = `${repo.url}#writing-a-post`;
+---
+
+<Base title="Blog" description="Short posts by colleagues about a skill, tool or framework they used." section="blog">
+  <div class="wrap page">
+    <div class="page__head">
+      <div class="page__intro">
+        <h1>Blog</h1>
+        <p class="page__lead">
+          Short posts by colleagues about a skill, tool or framework they used: what worked, what didn't, and what
+          they would do differently.
+        </p>
+      </div>
+      <a class="button button--soft button--inline" href="#write"><Icon name="pen" /> Write a post</a>
+    </div>
+
+    {
+      latest ? (
+        <article class="featured card-static">
+          <div class="featured__main">
+            <span class="new-label">
+              <span class="new-dot" aria-hidden="true" />
+              Latest post
+            </span>
+            <h2 class="featured__title">
+              <a href={latest.href}>{latest.title}</a>
+            </h2>
+            <p class="featured__desc">{latest.description}</p>
+            <p class="byline">
+              <span class="avatar" aria-hidden="true">{latest.initials}</span>
+              <span>{latest.author}</span>
+              <span aria-hidden="true">·</span>
+              <span>{latest.dateLabel}</span>
+              <span aria-hidden="true">·</span>
+              <span>{latest.readingMinutes} min read</span>
+            </p>
+          </div>
+          <div class="featured__side">
+            {latest.items.length > 0 && (
+              <div class="featured__skills">
+                <span class="featured__skills-label">About</span>
+                {latest.items.map((item) => (
+                  <a href={item.href}>
+                    {item.title}
+                    <span class="featured__kind"> · {item.kindLabel}</span>
+                  </a>
+                ))}
+              </div>
+            )}
+            <a class="button button--inline" href={latest.href}>
+              Read post <Icon name="arrow-right" />
+            </a>
+          </div>
+        </article>
+      ) : (
+        <p class="empty">No posts yet. Be the first to write one.</p>
+      )
+    }
+
+    <div class="split">
+      <section class="split__main" aria-labelledby="all-posts">
+        {
+          rest.length > 0 && (
+            <>
+              <div class="split__head">
+                <h2 id="all-posts">Earlier posts</h2>
+                {topics.length > 1 && (
+                  <div class="chips" role="group" aria-label="Filter by topic">
+                    <button class="chip" type="button" data-topic-filter="" aria-pressed="true">
+                      All
+                    </button>
+                    {topics.map((topic) => (
+                      <button class="chip" type="button" data-topic-filter={topic} aria-pressed="false">
+                        {topic}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <ul class="post-list">
+                {rest.map((post) => (
+                  <li data-topic={post.topic ?? ''}>
+                    <a class="post-row" href={post.href}>
+                      <span class="post-row__main">
+                        <span class="post-row__title">{post.title}</span>
+                        <span class="post-row__desc">{post.description}</span>
+                        <span class="post-row__badges">
+                          {post.topic && <span class="badge">{post.topic}</span>}
+                          {post.items.map((item) => (
+                            <span class="badge badge--accent">
+                              <Icon name="star" size={12} />
+                              {item.title}
+                            </span>
+                          ))}
+                        </span>
+                      </span>
+                      <span class="post-row__meta">
+                        <span>{post.dateLabel}</span>
+                        <span>
+                          {post.author} · {post.readingMinutes} min
+                        </span>
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+      </section>
+
+      <aside id="write" class="split__side">
+        <section class="panel">
+          <h2>Share what you learned</h2>
+          <p class="panel__text">
+            A post is one Markdown file. Keep it short: what you tried, what happened, what you'd tell a colleague.
+          </p>
+          <ol class="steps">
+            <li>Copy <code>posts/_template.md</code> to <code>posts/&lt;slug&gt;.md</code></li>
+            <li>List the skills you used under <code>skills:</code>. They link both ways.</li>
+            <li>Open a pull request</li>
+          </ol>
+          <a href={guide}>Read the post guide</a>
+        </section>
+
+        {
+          popular.length > 0 && (
+            <section class="panel">
+              <h2>Most written about</h2>
+              <ul class="tally">
+                {popular.map(({ item, count }) => (
+                  <li>
+                    <a href={item.href}>{item.title}</a>
+                    <span>
+                      {count} post{count === 1 ? '' : 's'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+      </aside>
+    </div>
+  </div>
+</Base>
+
+<script>
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('[data-topic]'));
+  const buttons = Array.from(document.querySelectorAll<HTMLElement>('[data-topic-filter]'));
+
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      const topic = button.dataset.topicFilter ?? '';
+      for (const b of buttons) b.setAttribute('aria-pressed', String(b === button));
+      for (const row of rows) row.hidden = Boolean(topic) && row.dataset.topic !== topic;
+    });
+  }
+</script>
