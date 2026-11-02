@@ -23,7 +23,7 @@ const snippets = skillSnippets(name);
             projects.
           </span>
           {agent.docs && (
-            <a href={agent.docs} rel="noopener">
+            <a href={agent.docs} target="_blank" rel="noopener">
               {agent.label} docs →
             </a>
           )}
@@ -36,7 +36,7 @@ const snippets = skillSnippets(name);
 <section class="panel">
   <h2>Download</h2>
   <a class="button" href={downloadUrl(name)} download>Download {name}.skill</a>
-  <a class="button button--secondary" href={sourceUrl(name)} rel="noopener">View source on GitHub</a>
+  <a class="button button--secondary" href={sourceUrl(name)} target="_blank" rel="noopener">View source on GitHub</a>
   <p class="panel__note">
     A zip archive of the skill folder — SKILL.md plus any supporting files — for installing by
     hand.

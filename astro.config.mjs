@@ -5,6 +5,7 @@ import { unified } from '@astrojs/markdown-remark';
 import { parse } from 'yaml';
 import { resolveRepo, isUserSite } from './src/lib/repo.mjs';
 import { remarkRepoLinks } from './scripts/remark-repo-links.mjs';
+import { rehypeExternalLinks } from './scripts/rehype-external-links.mjs';
 
 const config = parse(readFileSync(fileURLToPath(new URL('./config.yaml', import.meta.url)), 'utf8'));
 
@@ -20,6 +21,9 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'ignore',
   markdown: {
-    processor: unified({ remarkPlugins: [[remarkRepoLinks, { base }]] }),
+    processor: unified({
+      remarkPlugins: [[remarkRepoLinks, { base }]],
+      rehypePlugins: [rehypeExternalLinks],
+    }),
   },
 });

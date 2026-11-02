@@ -91,7 +91,7 @@ const snippets = external ? [] : skillSnippets(item.slug);
 
     {
       external && (
-        <a class="button button--soft card__action" href={external.source} rel="noopener">
+        <a class="button button--soft card__action" href={external.source} target="_blank" rel="noopener">
           View project
           <Icon name="external" size={14} />
           <span class="visually-hidden">(opens {external.sourceLabel})</span>
