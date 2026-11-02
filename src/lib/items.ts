@@ -1,5 +1,6 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { config, maintainer, titleCase } from './config';
+import { withBase } from './url';
 
 /** A tag, as written in frontmatter and as shown on a chip. */
 export interface Tag {
@@ -9,19 +10,51 @@ export interface Tag {
   label: string;
 }
 
-/** A skill, normalised into one shape for cards and pages. */
-export interface Skill {
+/** What every card needs, whether the item lives here or elsewhere. */
+interface BaseItem {
   slug: string;
-  name: string;
   title: string;
   description: string;
   tags: Tag[];
+  href: string;
+}
+
+/** A skill in this library, normalised into one shape for cards and pages. */
+export interface Skill extends BaseItem {
+  origin: 'library';
+  name: string;
   version: string;
   author: string;
   license?: string;
   homepage?: string;
   entry: CollectionEntry<'skills'>;
 }
+
+export type ExternalKind = CollectionEntry<'external'>['data']['kind'];
+
+/** Something found online: described here, installed from its own source. */
+export interface External extends BaseItem {
+  origin: 'external';
+  kind: ExternalKind;
+  kindLabel: string;
+  source: string;
+  /** `owner/repo` for GitHub sources, otherwise the host name. */
+  sourceLabel: string;
+  author?: string;
+  license?: string;
+  contributor?: string;
+  install: { label?: string; script: string }[];
+  entry: CollectionEntry<'external'>;
+}
+
+export type Item = Skill | External;
+
+const kindLabels: Record<ExternalKind, string> = {
+  skill: 'Skill',
+  collection: 'Skill collection',
+  plugin: 'Plugin',
+  tool: 'Tool',
+};
 
 function toTags(values: string[]): Tag[] {
   const seen = new Map<string, Tag>();
@@ -35,7 +68,9 @@ function toTags(values: string[]): Tag[] {
 function normalise(entry: CollectionEntry<'skills'>): Skill {
   const data = entry.data;
   return {
+    origin: 'library',
     slug: entry.id,
+    href: withBase(`/skills/${entry.id}/`),
     name: data.name,
     title: data.title ?? titleCase(data.name),
     description: data.description,
@@ -48,16 +83,54 @@ function normalise(entry: CollectionEntry<'skills'>): Skill {
   };
 }
 
+function sourceLabel(source: string): string {
+  const url = new URL(source);
+  if (url.hostname === 'github.com') return url.pathname.split('/').slice(1, 3).join('/');
+  return url.hostname.replace(/^www\./, '');
+}
+
+function normaliseExternal(entry: CollectionEntry<'external'>): External {
+  const data = entry.data;
+  return {
+    origin: 'external',
+    slug: entry.id,
+    href: withBase(`/external/${entry.id}/`),
+    title: data.title,
+    description: data.description,
+    tags: toTags(data.tags),
+    kind: data.kind,
+    kindLabel: kindLabels[data.kind],
+    source: data.source,
+    sourceLabel: sourceLabel(data.source),
+    author: data.author,
+    license: data.license,
+    contributor: data.contributor,
+    install: data.install,
+    entry,
+  };
+}
+
+const byTitle = (a: BaseItem, b: BaseItem) => a.title.localeCompare(b.title);
+
 export async function getSkills(): Promise<Skill[]> {
-  return (await getCollection('skills')).map(normalise).sort((a, b) => a.title.localeCompare(b.title));
+  return (await getCollection('skills')).map(normalise).sort(byTitle);
+}
+
+export async function getExternal(): Promise<External[]> {
+  return (await getCollection('external')).map(normaliseExternal).sort(byTitle);
+}
+
+/** Library skills and external picks together, as the home page lists them. */
+export async function getItems(): Promise<Item[]> {
+  return [...(await getSkills()), ...(await getExternal())].sort(byTitle);
 }
 
 /** Every tag in use, most common first, then alphabetically. */
-export function usedTags(skills: Skill[]): (Tag & { count: number })[] {
+export function usedTags(items: Item[]): (Tag & { count: number })[] {
   const counts = new Map<string, Tag & { count: number }>();
 
-  for (const skill of skills) {
-    for (const tag of skill.tags) {
+  for (const item of items) {
+    for (const tag of item.tags) {
       const existing = counts.get(tag.id);
       if (existing) existing.count++;
       else counts.set(tag.id, { ...tag, count: 1 });

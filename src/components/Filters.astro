@@ -3,9 +3,21 @@ import type { Tag } from '../lib/items';
 
 interface Props {
   tags: (Tag & { count: number })[];
+  /** How many items live in this library and how many are external picks. */
+  origins: { library: number; external: number };
 }
 
-const { tags } = Astro.props;
+const { tags, origins } = Astro.props;
+
+// Only worth offering when there is something on both sides.
+const originFilters =
+  origins.library > 0 && origins.external > 0
+    ? [
+        { id: '', label: 'All', count: origins.library + origins.external },
+        { id: 'library', label: 'Ours', count: origins.library },
+        { id: 'external', label: 'External', count: origins.external },
+      ]
+    : [];
 ---
 
 <div class="wrap filters">
@@ -29,6 +41,18 @@ const { tags } = Astro.props;
   }
 
   <p class="filters__status">
+    {
+      originFilters.length > 0 && (
+        <span class="chips" role="group" aria-label="Filter by origin">
+          {originFilters.map((o) => (
+            <button class="chip" type="button" data-origin-filter={o.id} aria-pressed={String(o.id === '')}>
+              {o.label}
+              <span class="chip__count">{o.count}</span>
+            </button>
+          ))}
+        </span>
+      )
+    }
     <span id="result-count" aria-live="polite"></span>
     <button class="filters__reset" type="button" id="reset-filters" hidden>Clear filters</button>
   </p>

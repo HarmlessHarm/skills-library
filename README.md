@@ -16,14 +16,15 @@ Fork it, edit one YAML file, drop your skills in, and push.
   dropdown in the header switches every snippet on the site between GitHub Copilot (the
   default), Codex and Claude Code. The choice is remembered.
 - **Downloadable `.skill` bundles** — each skill folder zipped, supporting files included.
-- **Claude and Codex plugin manifests**, so the whole library can also be installed as a
-  plugin in either. The hero offers it only when one of those agents is selected.
+- **External picks** — useful skills, plugins and tools found elsewhere, each with a short
+  article on why it's worth a look and how to get it from its own source.
 - **Light and dark themes** — follows the viewer's system setting, with a header toggle that
   overrides it and is remembered.
 - **Automatic deploys** to GitHub Pages on every push to `main`.
 
-Skills only, by design: the [Agent Skills](https://agentskills.io) format is the one thing
-Copilot, Codex and Claude Code all read the same way.
+Library skills use the [Agent Skills](https://agentskills.io) format, the one thing Copilot,
+Codex and Claude Code all read the same way. External picks link out instead, so they can be
+anything: a single skill, a collection, a plugin or a CLI tool.
 
 ## Setup
 
@@ -44,10 +45,6 @@ run locally — so a fresh fork already shows the right maintainer, links and in
 with nothing filled in. Set `site.author` only if you want a display name instead of your
 GitHub username, and `site.repo` only to point at a different repository than the one you are
 building in.
-
-The one thing that cannot be derived at render time is the committed plugin manifests, since
-Claude and Codex read those from the repository. CI rewrites them for you on the first push —
-see [Generated plugin manifests](#generated-plugin-manifests).
 
 ## Adding a skill
 
@@ -89,6 +86,49 @@ Tags are free-form — there is no list to register them in. They are matched
 case-insensitively and displayed capitalised, so `pull-request` renders as `Pull Request` and
 `Pull-Request` is the same tag.
 
+## Adding an external pick
+
+Found something useful that lives in someone else's repository? Describe it in
+`external/<name>.md` rather than copying it into `skills/`:
+
+```markdown
+---
+title: OpenSpec
+description: One or two sentences for the card.
+kind: tool               # skill | collection | plugin | tool
+source: https://github.com/Fission-AI/OpenSpec
+author: Fission AI
+license: MIT
+tags: [planning, specs]
+contributor: Your Name   # who wrote this article
+install:
+  - label: Install the CLI
+    script: npm install -g @fission-ai/openspec@latest
+  - label: Then, in your project
+    script: openspec init
+---
+
+A short article in your own words: what it is, why it's worth a look, and anything a
+colleague should know before trying it.
+```
+
+| Field         | Purpose                                                              |
+| ------------- | -------------------------------------------------------------------- |
+| `title`       | **Required.** Display name                                           |
+| `description` | **Required.** Shown on the card and at the top of the page           |
+| `kind`        | **Required.** `skill`, `collection`, `plugin` or `tool`              |
+| `source`      | **Required.** Where it lives. GitHub links show as `owner/repo`      |
+| `install`     | Commands copied from the source's own instructions, in order         |
+| `author`      | Who made it                                                          |
+| `license`     | Its license, as stated by the source                                 |
+| `contributor` | Who wrote the article                                                |
+| `tags`        | Shared with library skills, so filters cover both                    |
+
+External picks appear alongside library skills with an **External** label, and an
+*All / Ours / External* filter appears once both exist. They are never part of
+`npx skills add <owner>/<repo>` for this library — installing one always happens from its
+own source.
+
 ## Configuration
 
 Everything site-level lives in [`config.yaml`](config.yaml):
@@ -102,34 +142,6 @@ Everything site-level lives in [`config.yaml`](config.yaml):
 
 Tag chips are built from the tags your skills actually use, so there is nothing
 to configure.
-
-### Generated plugin manifests
-
-Four manifests are generated from `config.yaml` — never edit them by hand, your changes will be
-overwritten:
-
-| File | Ecosystem |
-| ---- | --------- |
-| `.claude-plugin/plugin.json` | Claude plugin manifest |
-| `.claude-plugin/marketplace.json` | Claude marketplace, so `/plugin marketplace add <you>/<repo>` resolves |
-| `.codex-plugin/plugin.json` | Codex plugin manifest, pointing `skills` at `./skills/` |
-| `.agents/plugins/marketplace.json` | Codex marketplace, so `codex plugin marketplace add <you>/<repo>` resolves |
-
-They are the one generated thing that has to be **committed**, because both agents read them
-from your repository rather than from the built site — which is why a template ships them
-carrying someone else's name.
-
-You do not have to do anything about that. The deploy workflow regenerates all four on every
-push and commits them back if any changed, so **your fork re-attributes itself to you on its
-first push** — you will see a `Sync plugin manifests with config.yaml` commit from
-`github-actions[bot]` the first time CI runs. The same step keeps them in sync afterwards, so
-editing `config.yaml` is enough and you never need to remember to rebuild.
-
-Two cases where you should run `npm run build` and commit the result yourself:
-
-- your `main` is protected against direct pushes, so CI cannot commit (the run logs a warning
-  and still deploys), or
-- you want the manifests correct before CI has run for the first time.
 
 ## Theming
 
@@ -169,9 +181,6 @@ under `agents:` in `config.yaml` defines one:
 - id: claude
   label: Claude Code
   skillsAgent: claude-code
-  plugin: |-
-    /plugin marketplace add {slug}
-    /plugin install {plugin}@{plugin}
   docs: https://code.claude.com/docs/en/skills
 ```
 
@@ -180,7 +189,6 @@ under `agents:` in `config.yaml` defines one:
 | `id`          | Internal key, also what `defaultAgent` refers to                           |
 | `label`       | Shown in the dropdown and the snippets                                     |
 | `skillsAgent` | The agent's identifier in the `skills` CLI, passed as `-a`                 |
-| `plugin`      | Optional. Installs the whole library as a plugin; leave out to offer none  |
 | `docs`        | Optional link shown under each install snippet                             |
 
 Every snippet uses the [`skills` CLI](https://skills.sh), which knows where each agent keeps its
@@ -193,10 +201,6 @@ npx skills add <owner>/<repo> --skill hello-world -a github-copilot # one skill
 
 Both install into the current project; `-g` installs for the user instead. Run
 `npx skills --help` for the list of agent identifiers.
-
-`plugin` accepts the placeholders `{owner}`, `{repo}`, `{slug}`, `{branch}` and `{plugin}` (the
-generated plugin name). GitHub Copilot ships without one, so its hero shows only the
-`npx skills` install; Codex and Claude Code also get a plugin install.
 
 Every snippet is rendered into the page at build time and one is revealed with CSS, so the
 right instructions show before the page paints and the site still works with JavaScript off.
@@ -211,20 +215,18 @@ npm run preview  # serve dist/ with the correct base path
 ```
 
 `npm run dev` and `npm run build` both run `scripts/build-assets.mjs` first, which zips the
-`.skill` bundles into `public/downloads/` (gitignored) and regenerates the plugin manifests.
+`.skill` bundles into `public/downloads/` (gitignored).
 
 ## Project structure
 
 ```
 config.yaml              Site configuration — the file you edit
 skills/<name>/SKILL.md   One folder per skill, plus any supporting files
+external/<name>.md       One article per external pick
 src/styles/theme.css     Design tokens
 src/lib/repo.mjs         Works out which repository this is, for links and attribution
 src/lib/                 Config loading, install snippets, skill normalisation
-scripts/build-assets.mjs Bundles .skill files, regenerates plugin manifests
-.claude-plugin/          Generated Claude plugin + marketplace manifests (committed)
-.codex-plugin/           Generated Codex plugin manifest (committed)
-.agents/plugins/         Generated Codex marketplace manifest (committed)
+scripts/build-assets.mjs Bundles .skill files
 ```
 
 Built with [Astro](https://astro.build). No UI framework, no client-side data fetching —

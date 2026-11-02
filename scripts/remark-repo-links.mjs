@@ -1,6 +1,6 @@
 /**
- * Rewrites relative links and images inside skill bodies so they
- * resolve on the published site.
+ * Rewrites relative links and images inside skill bodies and external articles
+ * so they resolve on the published site.
  *
  * A skill may point at a sibling file (`[reference](reference.md)`) — correct
  * inside the installed folder, but a 404 on a site that only publishes pages.
@@ -23,7 +23,7 @@ export function remarkRepoLinks() {
 
     // Path of the markdown file relative to the repository root.
     const source = (file.history?.[0] ?? '').replace(/\\/g, '/');
-    const match = source.match(/\/(skills\/.+)$/);
+    const match = source.match(/\/((?:skills|external)\/.+)$/);
     if (!match) return;
 
     const dir = match[1].slice(0, match[1].lastIndexOf('/'));
@@ -34,7 +34,7 @@ export function remarkRepoLinks() {
           node.type === 'image'
             ? `https://raw.githubusercontent.com/${repo}/${branch}`
             : `https://github.com/${repo}/blob/${branch}`;
-        node.url = `${host}/${dir}/${node.url}`.replace(/([^:])\/{2,}/g, '$1/');
+        node.url = new URL(node.url, `${host}/${dir}/`).href;
       }
       node.children?.forEach(visit);
     };

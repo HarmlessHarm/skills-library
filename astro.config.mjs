@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
+import { unified } from '@astrojs/markdown-remark';
 import { parse } from 'yaml';
 import { resolveRepo, isUserSite } from './src/lib/repo.mjs';
 import { remarkRepoLinks } from './scripts/remark-repo-links.mjs';
@@ -17,6 +18,6 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'ignore',
   markdown: {
-    remarkPlugins: [remarkRepoLinks],
+    processor: unified({ remarkPlugins: [remarkRepoLinks] }),
   },
 });

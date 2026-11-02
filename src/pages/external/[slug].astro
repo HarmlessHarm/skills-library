@@ -1,0 +1,16 @@
+---
+import Base from '../../layouts/Base.astro';
+import ExternalDetail from '../../components/ExternalDetail.astro';
+import { getExternal } from '../../lib/items';
+
+export async function getStaticPaths() {
+  const external = await getExternal();
+  return external.map((item) => ({ params: { slug: item.slug }, props: { item } }));
+}
+
+const { item } = Astro.props;
+---
+
+<Base title={item.title} description={item.description}>
+  <ExternalDetail item={item} />
+</Base>

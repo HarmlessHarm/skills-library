@@ -1,0 +1,67 @@
+---
+import { render } from 'astro:content';
+import type { External } from '../lib/items';
+import { withBase } from '../lib/url';
+import Terminal from './Terminal.astro';
+
+interface Props {
+  item: External;
+}
+
+const { item } = Astro.props;
+const { Content } = await render(item.entry);
+---
+
+<div class="wrap">
+  <p class="breadcrumb">
+    <a href={withBase('/')}>Home</a> / <a href={withBase('/?from=external')}>External</a>
+  </p>
+
+  <div class="detail">
+    <article>
+      <h1 class="detail__title">{item.title}</h1>
+      <p class="detail__desc">{item.description}</p>
+
+      <div class="detail__badges">
+        {item.tags.map((tag) => (
+          <a class="badge" href={withBase(`/?tag=${encodeURIComponent(tag.id)}`)}>
+            {tag.label}
+          </a>
+        ))}
+      </div>
+
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+
+    <aside class="detail__aside">
+      <section class="panel">
+        <h2>Get it</h2>
+        {
+          item.install.map(({ label, script }) => (
+            <>
+              {label && <p class="panel__label">{label}</p>}
+              <Terminal script={script} />
+            </>
+          ))
+        }
+        <a class="button" href={item.source} rel="noopener">View source ↗</a>
+        <p class="panel__note">
+          Installed from the original source, not from this library. Check its own instructions
+          for your agent.
+        </p>
+      </section>
+
+      <section class="panel">
+        <h2>Details</h2>
+        <dl class="meta-list">
+          <div><dt>Type</dt><dd>{item.kindLabel}</dd></div>
+          {item.author && <div><dt>Author</dt><dd>{item.author}</dd></div>}
+          {item.license && <div><dt>License</dt><dd>{item.license}</dd></div>}
+          {item.contributor && <div><dt>Written by</dt><dd>{item.contributor}</dd></div>}
+        </dl>
+      </section>
+    </aside>
+  </div>
+</div>

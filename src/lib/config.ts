@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import rawConfig from '../../config.yaml?raw';
 import { parse } from 'yaml';
 import { resolveRepo } from './repo.mjs';
 
@@ -8,9 +8,6 @@ export interface AgentConfig {
   label: string;
   /** The agent's identifier in the `skills` CLI, passed as `-a`. */
   skillsAgent: string;
-  /** Command that installs the whole library as a plugin. Omitted for agents
-      that should only be offered the `npx skills` install. */
-  plugin?: string;
   docs?: string;
 }
 
@@ -31,7 +28,7 @@ export interface SiteConfig {
   agents: AgentConfig[];
 }
 
-const raw = parse(readFileSync(new URL('../../config.yaml', import.meta.url), 'utf8'));
+const raw = parse(rawConfig);
 
 export const config: SiteConfig = {
   ...raw,

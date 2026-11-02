@@ -146,10 +146,6 @@ pre {
   max-width: 52ch;
 }
 
-.hero__install-plugin {
-  margin-top: 1.25rem;
-}
-
 .hero__meta {
   margin: 1.25rem 0 0;
   font-size: 0.875rem;
@@ -163,15 +159,18 @@ pre {
   background: var(--terminal-bg);
   color: var(--terminal-text);
   border-radius: var(--radius);
-  padding: 0.85rem 3rem 0.85rem 1rem;
-  overflow-x: auto;
+  /* Right padding keeps the text clear of the Copy button. */
+  padding: 0.85rem 4.5rem 0.85rem 1rem;
 }
 
 .terminal pre {
   margin: 0;
   font-size: 0.85rem;
   line-height: 1.7;
-  white-space: pre;
+  /* Long commands wrap rather than scroll under the Copy button; the button
+     still copies the exact command. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .copy-button {
@@ -290,6 +289,7 @@ pre {
 .filters__status {
   flex: 1 1 100%;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
@@ -297,6 +297,10 @@ pre {
   color: var(--text-muted);
   border-top: 1px solid var(--border);
   padding-top: 0.85rem;
+}
+
+.filters__status .chips + #result-count {
+  margin-right: auto;
 }
 
 .filters__reset {
@@ -355,6 +359,24 @@ pre {
   font-size: 1.02rem;
   font-weight: 620;
   letter-spacing: -0.01em;
+}
+
+.card__origin {
+  flex: none;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: var(--radius-pill);
+  padding: 0.1rem 0.5rem;
+}
+
+.card__from {
+  margin: -0.35rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-faint);
 }
 
 .card__desc {
@@ -453,6 +475,20 @@ pre {
   letter-spacing: 0.06em;
   color: var(--text-faint);
   margin: 0 0 0.75rem;
+}
+
+.panel__label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0.9rem 0 0.35rem;
+}
+
+.panel__label:first-of-type {
+  margin-top: 0;
+}
+
+.panel .terminal + .button {
+  margin-top: 1rem;
 }
 
 .panel__note {
@@ -604,6 +640,30 @@ pre {
   padding-block: 1.5rem 2.5rem;
   font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+/* Details list in the detail page sidebar ----------------------------------- */
+
+.meta-list {
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+}
+
+.meta-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.meta-list dt {
+  color: var(--text-faint);
+}
+
+.meta-list dd {
+  margin: 0;
+  text-align: right;
 }
 
 /* -------------------------------------------------------------------------
