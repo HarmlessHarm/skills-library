@@ -6,13 +6,11 @@ import { resolveRepo } from './repo.mjs';
 export interface AgentConfig {
   id: string;
   label: string;
-  /** Directory skills are installed into, e.g. `~/.claude/skills`. */
-  skillDir: string;
-  /** Where a single command file goes. May contain `{name}`. */
-  commandPath: string;
-  /** Command that installs the whole library. Omitted for agents with no
-      plugin ecosystem. */
-  marketplace?: string;
+  /** The agent's identifier in the `skills` CLI, passed as `-a`. */
+  skillsAgent: string;
+  /** Command that installs the whole library as a plugin. Omitted for agents
+      that should only be offered the `npx skills` install. */
+  plugin?: string;
   docs?: string;
 }
 

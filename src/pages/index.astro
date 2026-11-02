@@ -1,23 +1,19 @@
 ---
 import Base from '../layouts/Base.astro';
 import Filters from '../components/Filters.astro';
-import ItemCard from '../components/ItemCard.astro';
+import SkillCard from '../components/SkillCard.astro';
 import Terminal from '../components/Terminal.astro';
 import { config, maintainer } from '../lib/config';
-import { marketplaceSnippets } from '../lib/install';
-import { getItems, getSkills, getCommands, usedTags } from '../lib/items';
+import { librarySnippets, pluginSnippets } from '../lib/install';
+import { getSkills, usedTags } from '../lib/items';
 
-const [items, skills, commands] = await Promise.all([getItems(), getSkills(), getCommands()]);
-const tags = usedTags(items);
+const skills = await getSkills();
+const tags = usedTags(skills);
 
-const marketplaces = marketplaceSnippets();
-const withMarketplace = new Set(marketplaces.map((m) => m.agent.id));
-const noMarketplace = config.agents.filter((agent) => !withMarketplace.has(agent.id));
+const library = librarySnippets();
+const plugins = new Map(pluginSnippets().map((p) => [p.agent.id, p.script]));
 
-// Built as one string so the markup below cannot introduce stray whitespace
-// between the counts and the separators.
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
-const counts = `${plural(skills.length, 'skill')} · ${plural(commands.length, 'command')}`;
+const counts = `${skills.length} skill${skills.length === 1 ? '' : 's'}`;
 ---
 
 <Base>
@@ -28,23 +24,20 @@ const counts = `${plural(skills.length, 'skill')} · ${plural(commands.length, '
 
       <div class="hero__install">
         {
-          marketplaces.map(({ agent, script }) => (
+          library.map(({ agent, script }) => (
             <div class="agent-block" data-agent-id={agent.id}>
-              <p class="hero__install-label">Add the whole library to {agent.label}</p>
+              <p class="hero__install-label">Add every skill to {agent.label}</p>
               <Terminal script={script} />
-            </div>
-          ))
-        }
-        {
-          /* Agents with no plugin ecosystem still get a line here, so the hero
-             does not collapse when one of them is selected. */
-          noMarketplace.map((agent) => (
-            <div class="agent-block" data-agent-id={agent.id}>
-              <p class="hero__install-label">Install into {agent.label}</p>
               <p class="hero__install-note">
-                {agent.label} has no plugin marketplace — open any skill or command below for a
-                one-line install.
+                Installs into the current project — add <code>-g</code> for all your projects. Open
+                any skill below to install just that one.
               </p>
+              {plugins.has(agent.id) && (
+                <div class="hero__install-plugin">
+                  <p class="hero__install-label">Or install the library as a {agent.label} plugin</p>
+                  <Terminal script={plugins.get(agent.id)!} />
+                </div>
+              )}
             </div>
           ))
         }
@@ -74,9 +67,9 @@ const counts = `${plural(skills.length, 'skill')} · ${plural(commands.length, '
 
   <div class="wrap">
     <ul class="grid" id="grid">
-      {items.map((item) => <ItemCard item={item} />)}
+      {skills.map((item) => <SkillCard item={item} />)}
     </ul>
-    <p class="empty" id="empty" hidden>No skills or commands match that search.</p>
+    <p class="empty" id="empty" hidden>No skills match that search.</p>
   </div>
 </Base>
 

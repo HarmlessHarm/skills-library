@@ -1,6 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { config, maintainer, titleCase } from './config';
-import type { ItemType } from './install';
 
 /** A tag, as written in frontmatter and as shown on a chip. */
 export interface Tag {
@@ -10,9 +9,8 @@ export interface Tag {
   label: string;
 }
 
-/** A skill or a command, normalised into one shape for cards and pages. */
-export interface Item {
-  type: ItemType;
+/** A skill, normalised into one shape for cards and pages. */
+export interface Skill {
   slug: string;
   name: string;
   title: string;
@@ -22,8 +20,7 @@ export interface Item {
   author: string;
   license?: string;
   homepage?: string;
-  argumentHint?: string;
-  entry: CollectionEntry<'skills'> | CollectionEntry<'commands'>;
+  entry: CollectionEntry<'skills'>;
 }
 
 function toTags(values: string[]): Tag[] {
@@ -35,10 +32,9 @@ function toTags(values: string[]): Tag[] {
   return [...seen.values()].sort((a, b) => a.label.localeCompare(b.label));
 }
 
-function normalise(entry: CollectionEntry<'skills'> | CollectionEntry<'commands'>, type: ItemType): Item {
+function normalise(entry: CollectionEntry<'skills'>): Skill {
   const data = entry.data;
   return {
-    type,
     slug: entry.id,
     name: data.name,
     title: data.title ?? titleCase(data.name),
@@ -48,31 +44,20 @@ function normalise(entry: CollectionEntry<'skills'> | CollectionEntry<'commands'
     author: data.author ?? maintainer.name,
     license: data.license ?? config.defaults.license,
     homepage: data.homepage,
-    argumentHint: 'argument-hint' in data ? data['argument-hint'] : undefined,
     entry,
   };
 }
 
-const byTitle = (a: Item, b: Item) => a.title.localeCompare(b.title);
-
-export async function getSkills(): Promise<Item[]> {
-  return (await getCollection('skills')).map((e) => normalise(e, 'skill')).sort(byTitle);
-}
-
-export async function getCommands(): Promise<Item[]> {
-  return (await getCollection('commands')).map((e) => normalise(e, 'command')).sort(byTitle);
-}
-
-export async function getItems(): Promise<Item[]> {
-  return [...(await getSkills()), ...(await getCommands())].sort(byTitle);
+export async function getSkills(): Promise<Skill[]> {
+  return (await getCollection('skills')).map(normalise).sort((a, b) => a.title.localeCompare(b.title));
 }
 
 /** Every tag in use, most common first, then alphabetically. */
-export function usedTags(items: Item[]): (Tag & { count: number })[] {
+export function usedTags(skills: Skill[]): (Tag & { count: number })[] {
   const counts = new Map<string, Tag & { count: number }>();
 
-  for (const item of items) {
-    for (const tag of item.tags) {
+  for (const skill of skills) {
+    for (const tag of skill.tags) {
       const existing = counts.get(tag.id);
       if (existing) existing.count++;
       else counts.set(tag.id, { ...tag, count: 1 });

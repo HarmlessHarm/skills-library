@@ -1,8 +1,8 @@
 # Skills Library
 
-A template for publishing your own library of agent skills and commands as a
-GitHub Pages site — searchable, filterable, and installable into Claude Code,
-Codex or GitHub Copilot in one command.
+A template for publishing your own library of agent skills as a GitHub Pages
+site — searchable, filterable, and installable into GitHub Copilot, Codex or
+Claude Code in one command with [`npx skills`](https://skills.sh).
 
 Fork it, edit one YAML file, drop your skills in, and push.
 
@@ -12,16 +12,18 @@ Fork it, edit one YAML file, drop your skills in, and push.
 
 - **A browsable site** — search, tag filters, one tile per item.
 - **Search** across name, description and tags, with shareable filter URLs.
-- **Per-agent install instructions** — a dropdown in the header switches every snippet on the
-  site between Claude Code, Codex and Copilot. The choice is remembered.
+- **One install method for every agent** — each skill installs with `npx skills add`, and a
+  dropdown in the header switches every snippet on the site between GitHub Copilot (the
+  default), Codex and Claude Code. The choice is remembered.
 - **Downloadable `.skill` bundles** — each skill folder zipped, supporting files included.
-- **Claude and Codex plugin manifests**, so the whole library installs with one command in
-  either — the hero shows the right one for whichever agent is selected.
+- **Claude and Codex plugin manifests**, so the whole library can also be installed as a
+  plugin in either. The hero offers it only when one of those agents is selected.
 - **Light and dark themes** — follows the viewer's system setting, with a header toggle that
   overrides it and is remembered.
 - **Automatic deploys** to GitHub Pages on every push to `main`.
 
-Only skills and commands. No plugin browsing or other content types YET.
+Skills only, by design: the [Agent Skills](https://agentskills.io) format is the one thing
+Copilot, Codex and Claude Code all read the same way.
 
 ## Setup
 
@@ -87,23 +89,6 @@ Tags are free-form — there is no list to register them in. They are matched
 case-insensitively and displayed capitalised, so `pull-request` renders as `Pull Request` and
 `Pull-Request` is the same tag.
 
-## Adding a command
-
-Create `commands/<name>.md` — a single file, matching Claude Code's convention:
-
-```markdown
----
-name: my-command
-description: One line describing what running this does.
-tags: [releases, writing]
-argument-hint: "[branch]"
----
-
-The prompt the command runs.
-```
-
-`argument-hint` and `model` are also accepted and shown on the detail page.
-
 ## Configuration
 
 Everything site-level lives in [`config.yaml`](config.yaml):
@@ -115,7 +100,7 @@ Everything site-level lives in [`config.yaml`](config.yaml):
 | `theme`    | Accent colour, fonts and corner radius                                    |
 | `agents`   | The install targets in the header dropdown                                |
 
-Tag chips are built from the tags your skills and commands actually use, so there is nothing
+Tag chips are built from the tags your skills actually use, so there is nothing
 to configure.
 
 ### Generated plugin manifests
@@ -183,21 +168,35 @@ under `agents:` in `config.yaml` defines one:
 ```yaml
 - id: claude
   label: Claude Code
-  skillDir: ~/.claude/skills
-  commandPath: ~/.claude/commands/{name}.md
-  marketplace: /plugin marketplace add {slug}
+  skillsAgent: claude-code
+  plugin: |-
+    /plugin marketplace add {slug}
+    /plugin install {plugin}@{plugin}
   docs: https://code.claude.com/docs/en/skills
 ```
 
-Adding a fourth agent means adding a fourth entry — no code change. Available placeholders:
-`{name}`, `{owner}`, `{repo}`, `{slug}`, `{branch}`, `{downloadUrl}`, `{skillDir}`.
+| Field         | Purpose                                                                    |
+| ------------- | -------------------------------------------------------------------------- |
+| `id`          | Internal key, also what `defaultAgent` refers to                           |
+| `label`       | Shown in the dropdown and the snippets                                     |
+| `skillsAgent` | The agent's identifier in the `skills` CLI, passed as `-a`                 |
+| `plugin`      | Optional. Installs the whole library as a plugin; leave out to offer none  |
+| `docs`        | Optional link shown under each install snippet                             |
 
-`marketplace` is the "install the whole library" command shown in the hero, and it follows the
-dropdown like everything else. Leave it out for an agent with no plugin ecosystem — Copilot
-ships without one — and the hero shows a short note pointing at the per-item installs instead.
+Every snippet uses the [`skills` CLI](https://skills.sh), which knows where each agent keeps its
+skills — so this repository never has to:
 
-All three shipped agents read the same `SKILL.md` format; they differ only in where the files
-go. If a vendor moves a directory, fix it here and every snippet on the site follows.
+```bash
+npx skills add <owner>/<repo> -a github-copilot                     # every skill
+npx skills add <owner>/<repo> --skill hello-world -a github-copilot # one skill
+```
+
+Both install into the current project; `-g` installs for the user instead. Run
+`npx skills --help` for the list of agent identifiers.
+
+`plugin` accepts the placeholders `{owner}`, `{repo}`, `{slug}`, `{branch}` and `{plugin}` (the
+generated plugin name). GitHub Copilot ships without one, so its hero shows only the
+`npx skills` install; Codex and Claude Code also get a plugin install.
 
 Every snippet is rendered into the page at build time and one is revealed with CSS, so the
 right instructions show before the page paints and the site still works with JavaScript off.
@@ -219,10 +218,9 @@ npm run preview  # serve dist/ with the correct base path
 ```
 config.yaml              Site configuration — the file you edit
 skills/<name>/SKILL.md   One folder per skill, plus any supporting files
-commands/<name>.md       One file per command
 src/styles/theme.css     Design tokens
 src/lib/repo.mjs         Works out which repository this is, for links and attribution
-src/lib/                 Config loading, install snippets, item normalisation
+src/lib/                 Config loading, install snippets, skill normalisation
 scripts/build-assets.mjs Bundles .skill files, regenerates plugin manifests
 .claude-plugin/          Generated Claude plugin + marketplace manifests (committed)
 .codex-plugin/           Generated Codex plugin manifest (committed)

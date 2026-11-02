@@ -11,8 +11,8 @@
 
 site:
   title: Skills Library
-  tagline: A personal library of agent skills and commands.
-  description: Browse, search and install reusable skills and commands for your coding agent.
+  tagline: A personal library of agent skills.
+  description: Browse, search and install reusable skills for your coding agent.
 
   # Displayed as the maintainer. Defaults to the repository owner.
   author:
@@ -28,7 +28,7 @@ site:
   url:
   base:
 
-# Fallbacks for anything a skill or command leaves out of its frontmatter.
+# Fallbacks for anything a skill leaves out of its frontmatter.
 defaults:
   version: "1.0.0"
   license: MIT
@@ -45,30 +45,33 @@ theme:
 # Install targets. The dropdown in the header switches between these, and each
 # entry decides what the install snippets say.
 #
-# `marketplace` is the command that installs the whole library at once. Leave
-# it out for an agent with no plugin ecosystem and the hero hides that block.
+# Every skill installs with the `skills` CLI (https://skills.sh):
+#   npx skills add <owner>/<repo> --skill <name> -a <skillsAgent>
+# `skillsAgent` is that CLI's identifier for the agent (see `npx skills --help`).
 #
-# Placeholders: {name} {owner} {repo} {branch} {slug} {downloadUrl} {skillDir}
+# `plugin` is an optional extra: a command that installs the whole library as
+# a plugin. Leave it out and the hero only shows the `npx skills` install.
+#
+# Placeholders in `plugin`: {owner} {repo} {slug} {branch} {plugin}
 # ---------------------------------------------------------------------------
-defaultAgent: claude
+defaultAgent: copilot
 
 agents:
-  - id: claude
-    label: Claude Code
-    skillDir: ~/.claude/skills
-    commandPath: ~/.claude/commands/{name}.md
-    marketplace: /plugin marketplace add {slug}
-    docs: https://code.claude.com/docs/en/skills
+  - id: copilot
+    label: GitHub Copilot
+    skillsAgent: github-copilot
+    docs: https://docs.github.com/en/copilot/concepts/agents/about-agent-skills
 
   - id: codex
     label: Codex
-    skillDir: ~/.codex/skills
-    commandPath: ~/.codex/prompts/{name}.md
-    marketplace: codex plugin marketplace add {slug}
+    skillsAgent: codex
+    plugin: codex plugin marketplace add {slug}
     docs: https://developers.openai.com/codex/skills
 
-  - id: copilot
-    label: GitHub Copilot
-    skillDir: ~/.copilot/skills
-    commandPath: .github/prompts/{name}.prompt.md
-    docs: https://docs.github.com/en/copilot/concepts/agents/about-agent-skills
+  - id: claude
+    label: Claude Code
+    skillsAgent: claude-code
+    plugin: |-
+      /plugin marketplace add {slug}
+      /plugin install {plugin}@{plugin}
+    docs: https://code.claude.com/docs/en/skills

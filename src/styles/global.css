@@ -142,8 +142,12 @@ pre {
 .hero__install-note {
   font-size: 0.9rem;
   color: var(--text-muted);
-  margin: 0;
+  margin: 0.5rem 0 0;
   max-width: 52ch;
+}
+
+.hero__install-plugin {
+  margin-top: 1.25rem;
 }
 
 .hero__meta {
@@ -386,15 +390,6 @@ pre {
   color: var(--text-muted);
   background: var(--bg-subtle);
   white-space: nowrap;
-}
-
-.badge--type {
-  border-color: transparent;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.68rem;
 }
 
 /* Detail page ------------------------------------------------------------- */

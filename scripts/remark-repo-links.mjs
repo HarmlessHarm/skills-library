@@ -1,5 +1,5 @@
 /**
- * Rewrites relative links and images inside skill and command bodies so they
+ * Rewrites relative links and images inside skill bodies so they
  * resolve on the published site.
  *
  * A skill may point at a sibling file (`[reference](reference.md)`) — correct
@@ -23,7 +23,7 @@ export function remarkRepoLinks() {
 
     // Path of the markdown file relative to the repository root.
     const source = (file.history?.[0] ?? '').replace(/\\/g, '/');
-    const match = source.match(/\/((?:skills|commands)\/.+)$/);
+    const match = source.match(/\/(skills\/.+)$/);
     if (!match) return;
 
     const dir = match[1].slice(0, match[1].lastIndexOf('/'));
