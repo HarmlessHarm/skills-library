@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import rawConfig from '../../config.yaml?raw';
 import { parse } from 'yaml';
 import { resolveRepo } from './repo.mjs';
 
@@ -31,7 +31,7 @@ export interface SiteConfig {
   agents: AgentConfig[];
 }
 
-const raw = parse(readFileSync(new URL('../../config.yaml', import.meta.url), 'utf8'));
+const raw = parse(rawConfig);
 
 export const config: SiteConfig = {
   ...raw,
