@@ -1,10 +1,22 @@
 /* ===========================================================================
-   Theme tokens — Amsterdam Soft.
+   Theme tokens — Ember.
 
-   Values come from the Amsterdam Soft design system (a calmer, rounded take
-   on the Amsterdam Design System): Amsterdam blue as the one active colour,
-   Amsterdam red as a rare accent, neutral surfaces, Figtree, soft corners.
+   Ember is this template's default design system: one dark orange accent on
+   warm neutral surfaces, Manrope, soft corners.
+
+   - The accent is the one active colour: links, the main button, selected
+     filters. In light mode it is a burnt orange (#b33f00) so text and white
+     button labels stay above 4.5:1; in dark mode it is dark orange itself
+     (#ff8c00).
+   - The brand colour (dark orange, #ff8c00) is for small marks only: the
+     logo, the underline under the current nav item and the "new" dot. Never
+     body text, since it fails contrast on light backgrounds.
+   - Hover and soft variants are mixed from the accent, so changing the accent
+     (in config.yaml or here) keeps every derived colour in step.
+
    Every component references these variables and never a literal colour.
+   The `theme:` block in config.yaml overrides the accent, brand, fonts and
+   radius without touching this file; anything else is edited here.
 
    Colours are written as light-dark(light, dark), so each one is declared
    once with both of its values. Which half applies is decided by the
@@ -13,49 +25,52 @@
    which sets data-theme on <html>.
    =========================================================================== */
 
-@import '@fontsource-variable/figtree/wght.css';
+@import '@fontsource-variable/manrope/wght.css';
 
 :root {
   /* Follow the system setting unless the viewer has chosen otherwise. */
   color-scheme: light dark;
 
   /* Brand ---------------------------------------------------------------- */
-  /* Amsterdam blue: main actions, links, selected controls. */
-  --accent: light-dark(#004699, #8fbcf5);
-  --accent-hover: light-dark(#003677, #b0d0f8);
-  --accent-contrast: light-dark(#ffffff, #0b1f3a);
-  /* Quiet blue fill and the text that goes on it. */
-  --accent-soft: light-dark(#e6eefa, #1c2f4a);
-  --accent-soft-text: light-dark(#003f8a, #b9d5f9);
-  /* Amsterdam red: small marks only (logo, current nav item, "new" dot).
-     Never for text, buttons or errors. */
-  --brand-red: light-dark(#ec0000, #ff5a52);
-  --focus: light-dark(#004699, #8fbcf5);
+  /* Main actions, links, selected controls. */
+  --accent: light-dark(#b33f00, #ff8c00);
+  /* Text on an --accent fill. */
+  --accent-contrast: light-dark(#ffffff, #1c1208);
+  /* Darker in light mode, lighter in dark mode. */
+  --accent-hover: color-mix(in oklab, var(--accent), light-dark(#000000, #ffffff) 20%);
+  /* Quiet accent fill and the text that goes on it. */
+  --accent-soft: color-mix(in oklab, var(--accent) 13%, var(--surface));
+  --accent-soft-text: color-mix(in oklab, var(--accent), var(--text) 30%);
+  /* Small marks only (logo, current nav item, "new" dot). */
+  --brand: light-dark(#ff8c00, #ff8c00);
+  --brand-contrast: light-dark(#1c1208, #1c1208);
+  --focus: var(--accent);
 
-  /* Surfaces ------------------------------------------------------------- */
-  --bg: light-dark(#f6f7f9, #14161b);
-  --bg-subtle: light-dark(#eceef2, #262a33);
-  --surface: light-dark(#ffffff, #1c1f26);
-  --surface-hover: light-dark(#eceef2, #262a33);
-  --border: light-dark(#dfe2e8, #333843);
-  --border-strong: light-dark(#868c98, #7d8492);
+  /* Surfaces: warm greys, so the orange never sits on a cold blue-grey ---- */
+  --bg: light-dark(#f8f6f3, #17130f);
+  --bg-subtle: light-dark(#efebe6, #2a241e);
+  --surface: light-dark(#ffffff, #201b16);
+  --surface-hover: light-dark(#efebe6, #2a241e);
+  --border: light-dark(#e4dfd8, #3a332b);
+  --border-strong: light-dark(#8c847a, #857c71);
 
   /* Text ----------------------------------------------------------------- */
-  --text: light-dark(#1f2329, #eceef2);
-  --text-muted: light-dark(#565d6a, #a8afbb);
-  /* Kept for older selectors; the system has no lighter text that still
-     passes 4.5:1, so it is the same as muted. */
+  --text: light-dark(#221d18, #f1ece6);
+  --text-muted: light-dark(#5e574f, #aca49a);
+  /* Kept for older selectors; nothing lighter than muted still passes 4.5:1,
+     so it is the same as muted. */
   --text-faint: var(--text-muted);
 
   /* Status --------------------------------------------------------------- */
-  --warning: light-dark(#8a4b00, #ffcf8f);
-  --warning-soft: light-dark(#fff1dd, #3b2c14);
+  /* Yellow rather than orange, so a warning never reads as the accent. */
+  --warning: light-dark(#6e5300, #f5d36b);
+  --warning-soft: light-dark(#fff5d1, #342b10);
 
   /* Code ----------------------------------------------------------------- */
-  --code-bg: light-dark(#eceef2, #262a33);
-  --code-text: light-dark(#1f2329, #eceef2);
-  --terminal-bg: light-dark(#1f2329, #0f1115);
-  --terminal-text: light-dark(#eceef2, #eceef2);
+  --code-bg: light-dark(#efebe6, #2a241e);
+  --code-text: light-dark(#221d18, #f1ece6);
+  --terminal-bg: light-dark(#221d18, #0f0c09);
+  --terminal-text: light-dark(#f1ece6, #f1ece6);
 
   /* Space ---------------------------------------------------------------- */
   --space-1: 4px;
@@ -67,15 +82,15 @@
   --space-7: 48px;
 
   /* Shape and type ------------------------------------------------------- */
-  --font: 'Figtree Variable', Figtree, system-ui, sans-serif;
+  --font: 'Manrope Variable', Manrope, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --radius: 16px; /* cards, panels, alerts */
+  --radius: 14px; /* cards, panels, alerts */
   --radius-md: 10px; /* buttons, inputs */
   --radius-sm: 6px; /* inline elements */
   --radius-pill: 999px;
   /* light-dark() only takes colours, so it wraps the shadow colour alone. */
-  --shadow: 0 1px 2px light-dark(rgb(31 35 41 / 0.06), rgb(0 0 0 / 0.4));
-  --shadow-lifted: 0 6px 16px light-dark(rgb(31 35 41 / 0.08), rgb(0 0 0 / 0.5));
+  --shadow: 0 1px 2px light-dark(rgb(34 29 24 / 0.06), rgb(0 0 0 / 0.4));
+  --shadow-lifted: 0 6px 16px light-dark(rgb(34 29 24 / 0.09), rgb(0 0 0 / 0.5));
   --content-width: 1280px;
   --prose-width: 70ch;
 }

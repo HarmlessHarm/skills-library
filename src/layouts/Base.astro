@@ -1,5 +1,5 @@
 ---
-import { config, defaultAgent, repo } from '../lib/config';
+import { config, defaultAgent, maintainer, repo, themeVariables } from '../lib/config';
 import { withBase } from '../lib/url';
 import Header from '../components/Header.astro';
 import '../styles/theme.css';
@@ -24,6 +24,10 @@ const agentRules = [
 ].join('\n');
 
 const agentIds = config.agents.map((a) => a.id);
+
+// config.yaml `theme:` overrides the defaults in theme.css.
+const themeVars = themeVariables();
+const fontStylesheet = config.theme.fontStylesheet;
 ---
 
 <!doctype html>
@@ -35,6 +39,11 @@ const agentIds = config.agents.map((a) => a.id);
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    {fontStylesheet && <link rel="stylesheet" href={fontStylesheet} />}
+    {/* `:root:root` rather than `:root` on purpose: Astro emits its bundled
+        stylesheet after this tag, so at equal specificity theme.css would win
+        on source order and these overrides would silently do nothing. */}
+    {themeVars && <style set:html={`:root:root { ${themeVars} }`} />}
     <style set:html={agentRules} />
     <script is:inline define:vars={{ agentIds, fallback: defaultAgent.id }}>
       // Runs before first paint, so the correct install snippet is the only one
@@ -68,7 +77,7 @@ const agentIds = config.agents.map((a) => a.id);
 
     <footer class="site-footer">
       <div class="wrap site-footer__inner">
-        <span>Gemeente Amsterdam · {config.site.title}</span>
+        <span>{maintainer.name ? `${maintainer.name} · ${config.site.title}` : config.site.title}</span>
         <span class="site-footer__links">
           <a href={repo.url} target="_blank" rel="noopener">GitHub repository</a>
           <a href="https://agentskills.io" target="_blank" rel="noopener">Agent Skills format</a>
