@@ -98,14 +98,8 @@ pre {
 .site-header__brand {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
   text-decoration: none;
-}
-
-.site-header__divider {
-  width: 1px;
-  height: 40px;
-  background: var(--border);
 }
 
 .site-header__title {
@@ -131,10 +125,10 @@ pre {
   color: var(--accent);
 }
 
-/* Amsterdam red marks the current section: one small accent per screen. */
+/* The brand colour marks the current section: one small accent per screen. */
 .site-nav__link[aria-current='page'] {
   font-weight: 600;
-  box-shadow: inset 0 -3px 0 var(--brand-red);
+  box-shadow: inset 0 -3px 0 var(--brand);
 }
 
 .site-header__tools {
@@ -266,7 +260,7 @@ a.badge:hover {
   width: 8px;
   height: 8px;
   border-radius: var(--radius-pill);
-  background: var(--brand-red);
+  background: var(--brand);
 }
 
 .byline {

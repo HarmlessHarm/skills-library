@@ -5,9 +5,8 @@ import AgentSelect from './AgentSelect.astro';
 import Logo from './Logo.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
-
 interface Props {
-  /** Which nav item gets the red "you are here" underline. */
+  /** Which nav item gets the brand-coloured "you are here" underline. */
   section?: 'skills' | 'blog';
 }
 
@@ -22,9 +21,8 @@ const nav = [
 
 <header class="site-header">
   <div class="wrap site-header__inner">
-    <a class="site-header__brand" href={withBase('/')} aria-label={`Gemeente Amsterdam ${config.site.title}, home`}>
+    <a class="site-header__brand" href={withBase('/')} aria-label={`${config.site.title}, home`}>
       <Logo />
-      <span class="site-header__divider" aria-hidden="true"></span>
       <span class="site-header__title">{config.site.title}</span>
     </a>
 

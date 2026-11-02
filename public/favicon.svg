@@ -1,33 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="Robot head">
-  <!-- Off-white disc so the navy linework stays visible on a dark tab bar. -->
-  <circle cx="40" cy="40" r="40" fill="#f8f9fc" />
-
-  <!-- The robot is drawn on a 64x64 grid, offset to sit centred in the disc
-       with enough margin that the ears clear the curve. -->
-  <g
-    transform="translate(8 10)"
-    fill="none"
-    stroke="#0d1155"
-    stroke-width="4"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <!-- antenna, kept short so the head can fill the canvas at 16px -->
-    <path d="M32 11v7" />
-    <circle cx="32" cy="7" r="4" fill="#f0325c" />
-
-    <!-- ears -->
-    <rect x="2" y="32" width="9" height="14" rx="3" fill="#8890ad" />
-    <rect x="53" y="32" width="9" height="14" rx="3" fill="#8890ad" />
-
-    <!-- head -->
-    <rect x="8" y="18" width="48" height="40" rx="10" fill="#eaeefb" />
-
-    <!-- eyes, spaced wide and sat high to stay separate when downscaled -->
-    <circle cx="22" cy="33" r="3" fill="#0d1155" />
-    <circle cx="42" cy="33" r="3" fill="#0d1155" />
-
-    <!-- smile, wide and shallow so it does not merge with the eyes -->
-    <path d="M23 45c2.6 2.7 5.6 4 9 4s6.4-1.3 9-4" />
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-label="Skill library">
+  <!-- The same spark-on-a-tile mark as the header logo (src/components/Logo.astro),
+       in the Ember brand colour. Favicons cannot read CSS variables, so the
+       colours are written out: change them here if you change theme.brand. -->
+  <rect width="40" height="40" rx="11" fill="#ff8c00" />
+  <path
+    fill="#1c1208"
+    d="M20 7c1 8.6 4.4 12 13 13-8.6 1-12 4.4-13 13-1-8.6-4.4-12-13-13 8.6-1 12-4.4 13-13z"
+  />
 </svg>

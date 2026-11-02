@@ -1,13 +1,12 @@
 # Skill Library
 
-The Gemeente Amsterdam skill library: a GitHub Pages site for sharing agent skills, tools and
-plugins, and for sharing what we learned using them. Skills install into GitHub Copilot, Codex
-or Claude Code in one command with [`npx skills`](https://skills.sh); short blog posts from
-colleagues sit next to them.
+A template for publishing your own library of agent skills, tools and plugins as a GitHub
+Pages site, with a blog for sharing what you learned using them. Skills install into GitHub
+Copilot, Codex or Claude Code in one command with [`npx skills`](https://skills.sh).
 
-It's styled with the Amsterdam Soft design system (Amsterdam blue, a little Amsterdam red,
-Figtree, soft corners). The styling is hard-coded for now; it may be split back out into a
-generic template later.
+Use the template, edit one YAML file, drop your skills in, and push. It ships with **Ember**, a
+design system with a dark orange accent on warm neutrals; the accent, logo, fonts and corners
+are all set from `config.yaml`.
 
 ---
 
@@ -40,7 +39,8 @@ anything: a single skill, a collection, a plugin or a CLI tool.
    **Deploy to GitHub Pages ▸ Run workflow** once by hand — a fork's first workflow run does
    not start on its own. After that, pushes trigger it normally. Repositories created with
    **Use this template** do not need this.
-4. Edit [`config.yaml`](config.yaml) — realistically just `site.title` and `site.tagline`.
+4. Edit [`config.yaml`](config.yaml) — realistically just `site.title`, `site.tagline` and,
+   if you want your own colours, the `theme:` block.
 5. Push. The workflow builds and deploys; your site appears at
    `https://<you>.github.io/<repo>/`.
 
@@ -182,6 +182,7 @@ Everything site-level lives in [`config.yaml`](config.yaml):
 | ---------- | ------------------------------------------------------------------------ |
 | `site`     | Title and tagline, plus optional author/repository/URL/base overrides     |
 | `defaults` | Version and license for items that omit them                              |
+| `theme`    | Accent and brand colours, fonts and corner radius                         |
 | `agents`   | The install targets in the header dropdown                                |
 
 Tag chips are built from the tags your skills actually use, so there is nothing
@@ -189,30 +190,71 @@ to configure.
 
 ## Theming
 
-Every colour, space, radius, shadow and width is a custom property in
-[`src/styles/theme.css`](src/styles/theme.css), with values from the Amsterdam Soft design
-system. Components reference tokens only and never a literal colour, so changing a token
-changes the whole site. Layout lives in [`src/styles/global.css`](src/styles/global.css).
+Two levels, depending on how far you want to go:
 
-A few rules from the design system that the site follows:
+- **Quick** — the `theme:` block in [`config.yaml`](config.yaml). It's injected as CSS custom
+  properties after the design tokens and overrides them. Delete a key to fall back to the
+  default.
+- **Full** — [`src/styles/theme.css`](src/styles/theme.css). Every colour, space, radius,
+  shadow and width on the site is a custom property defined there. Components reference
+  tokens only and never a literal colour, so changing a token changes the whole site. Layout
+  lives in [`src/styles/global.css`](src/styles/global.css).
 
-- **Amsterdam blue** (`--accent`) is the one active colour: links, the main button, selected
-  filters.
-- **Amsterdam red** (`--brand-red`) is a small accent only: the logo, the underline under the
-  current nav item and the dot on the newest post. Never text, buttons or errors.
-- **Figtree** is the only typeface. It's bundled with
-  [`@fontsource-variable/figtree`](https://fontsource.org/fonts/figtree), so the site makes no
+```yaml
+theme:
+  accent: "#b33f00"       # links, the main button, selected filters
+  accentDark: "#ff8c00"   # the same in dark mode
+  accentText: "#ffffff"   # text on an accent-filled button
+  accentTextDark: "#1c1208"
+  brand: "#ff8c00"        # small marks: logo, current nav item, "new" dot
+  brandDark: "#ff8c00"
+  font: "'Manrope Variable', Manrope, system-ui, sans-serif"
+  fontStylesheet:         # a stylesheet URL that loads `font`, if it isn't bundled
+  monoFont: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+  radius: 14px            # cards and panels; buttons and inputs follow at 70%
+```
+
+Every `...Dark` key defaults to its light counterpart. The hover, soft-fill and soft-text
+variants of the accent are mixed from it with `color-mix()`, so one accent value restyles
+every button, badge and link consistently.
+
+The header logo is a spark on a rounded tile in the brand colour. Set `site.logo` to a path
+inside `public/` (for example `/logo.svg`) to use your own image instead, and replace
+[`public/favicon.svg`](public/favicon.svg) to match — a favicon can't read CSS variables, so
+its colours are written out.
+
+### The Ember design system
+
+The defaults in `theme.css` and `config.yaml`:
+
+| Role             | Light                 | Dark                  | Used for                                    |
+| ---------------- | --------------------- | --------------------- | ------------------------------------------- |
+| Accent           | `#b33f00` burnt orange | `#ff8c00` dark orange | Links, main button, selected controls       |
+| Brand            | `#ff8c00` dark orange | `#ff8c00` dark orange | Logo, current nav item, "new" dot           |
+| Background       | `#f8f6f3`             | `#17130f`             | Page                                        |
+| Surface          | `#ffffff`             | `#201b16`             | Cards, header, panels                       |
+| Text / muted     | `#221d18` / `#5e574f` | `#f1ece6` / `#aca49a` | Body copy and secondary text                |
+| Warning          | `#6e5300` on `#fff5d1` | `#f5d36b` on `#342b10` | Notices (yellow, so it never reads as the accent) |
+
+A few rules it follows:
+
+- **Dark orange is the signature.** It's the accent in dark mode and the brand mark in both.
+  In light mode `#ff8c00` is only 2.3:1 against white, so links and buttons use the deeper
+  burnt orange `#b33f00` (5.8:1) instead and dark orange stays on non-text marks.
+- **One accent.** Orange is the only active colour; everything else is a warm grey, so the
+  neutrals never look blue next to it. Warnings are yellow rather than orange for the same
+  reason.
+- **All text passes 4.5:1** in both themes, including muted text on the subtle surfaces.
+- **Manrope** is the typeface. It's bundled with
+  [`@fontsource-variable/manrope`](https://fontsource.org/fonts/manrope), so the site makes no
   requests to Google Fonts.
-
-The logo in [`src/components/Logo.astro`](src/components/Logo.astro) is drawn by hand. Swap
-in the official SVG before the site goes public.
 
 ### Light and dark
 
 Colours are written once, as `light-dark(light, dark)`:
 
 ```css
---bg: light-dark(#f6f7f9, #14161b);
+--bg: light-dark(#f8f6f3, #17130f);
 ```
 
 Which half applies comes from the `color-scheme` property, so there is no duplicated dark
@@ -287,4 +329,4 @@ filtering runs over pre-rendered cards in the DOM.
 
 ## License
 
-MIT.
+MIT. Replace this section with your own terms if you use the template.

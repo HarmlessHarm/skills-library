@@ -14,7 +14,11 @@ site:
   # The big line at the top of the home page.
   tagline: Skills, tools and plugins for your AI agent
   # The line under it, and the description search engines show.
-  description: Written by colleagues or linked from projects we trust. Find one, copy one command, and read what others learned using it.
+  description: Written here or linked from projects worth trusting. Find one, copy one command, and read what others learned using it.
+
+  # Optional logo shown in the header, as a path inside public/ (e.g. /logo.svg).
+  # Leave empty for the built-in mark, drawn in the theme's brand colour.
+  logo:
 
   # Displayed as the maintainer. Defaults to the repository owner.
   author:
@@ -34,6 +38,35 @@ site:
 defaults:
   version: "1.0.0"
   license: MIT
+
+# ---------------------------------------------------------------------------
+# Theme. The defaults below are the Ember design system (src/styles/theme.css):
+# a dark orange accent on warm neutrals. Change a value here to restyle the
+# site; delete it to fall back to theme.css. For anything beyond these keys,
+# edit src/styles/theme.css directly.
+#
+# Hover and soft variants of the accent are mixed from it automatically, so
+# one accent value is enough. Each `...Dark` key is the dark-mode value and
+# defaults to its light counterpart.
+# ---------------------------------------------------------------------------
+theme:
+  # Links, the main button and selected filters. Keep it at 4.5:1 or more
+  # against white in light mode — #ff8c00 itself is too light for text there.
+  accent: "#b33f00"
+  accentDark: "#ff8c00"
+  # Text on an accent-filled button.
+  accentText: "#ffffff"
+  accentTextDark: "#1c1208"
+  # Small marks only: the logo, the current nav item, the "new" dot.
+  brand: "#ff8c00"
+  brandDark: "#ff8c00"
+  # Manrope is bundled. For another typeface, set `fontStylesheet` to a
+  # stylesheet that loads it (Google Fonts, for example) and name it here.
+  font: "'Manrope Variable', Manrope, system-ui, sans-serif"
+  fontStylesheet:
+  monoFont: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+  # Corner radius of cards and panels. Buttons and inputs follow at ~70%.
+  radius: 14px
 
 # ---------------------------------------------------------------------------
 # Install targets. The dropdown in the header switches between these, and each
